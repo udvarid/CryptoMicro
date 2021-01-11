@@ -37,7 +37,7 @@ public class DataCollector {
         return currencyPairs;
     }
 
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 15000)
     private void candleRetriever() {
 
         boolean newCandleSaved = false;
