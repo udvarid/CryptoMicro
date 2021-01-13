@@ -1,17 +1,15 @@
 package com.donat.cryptoReporter.service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.donat.cryptoReporter.domain.Candle;
 import com.donat.cryptoReporter.dto.CandleDto;
 import com.donat.cryptoReporter.dto.mapper.CandleMapper;
 import com.donat.cryptoReporter.repository.CandleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,8 +17,10 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class CandleServiceImpl implements CandleService{
 
+    @Autowired
     private CandleRepository candleRepository;
 
+    @Autowired
     private CandleMapper candleMapper;
 
     @Override
