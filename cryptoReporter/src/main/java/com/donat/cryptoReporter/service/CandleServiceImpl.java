@@ -29,6 +29,11 @@ public class CandleServiceImpl implements CandleService{
         return transformCandles(candles, periodLength);
     }
 
+    @Override
+    public List<CandleDto> getRecentCandles() {
+        return candleMapper.candleListToCandleDtoList(candleRepository.getRecentCurrencyPairs());
+    }
+
     private List<CandleDto> transformCandles(List<CandleDto> candles, Integer periodLength) {
         if (periodLength == 1) {
             return candles;

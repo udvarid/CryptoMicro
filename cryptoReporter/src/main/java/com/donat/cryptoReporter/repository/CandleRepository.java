@@ -13,4 +13,13 @@ public interface CandleRepository extends JpaRepository<Candle, Long> {
             nativeQuery = true)
     List<Candle> getAllByCurrencyPair(String currencyPair, Integer lastNumber);
 
+    @Query(value = "select c0.*"
+            + "from candles c0 inner join (select c.currency_pair,"
+            + "                                   max(c.time) max_time"
+            + "                            from candles c"
+            + "                            group by c.currency_pair) c1"
+            + "                on c0.currency_pair = c1.currency_pair and c0.time = c1.max_time",
+            nativeQuery = true)
+    List<Candle> getRecentCurrencyPairs();
+
 }

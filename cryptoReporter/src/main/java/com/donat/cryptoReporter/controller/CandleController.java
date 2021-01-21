@@ -20,9 +20,14 @@ public class CandleController {
     private CandleService candleService;
 
     @GetMapping("/list/{currencyPair}/{periodLength}/{numberOfCandles}")
-    public List<CandleDto> giveUp(@PathVariable("currencyPair") String currencyPair,
+    public List<CandleDto> getCandleList(@PathVariable("currencyPair") String currencyPair,
                                   @PathVariable("periodLength") Integer periodLength,
                                   @PathVariable("numberOfCandles") Integer numberOfCandles) {
         return candleService.getCandleList(currencyPair,periodLength, numberOfCandles);
+    }
+
+    @GetMapping("/recent")
+    public List<CandleDto> getRecentCandles() {
+        return candleService.getRecentCandles();
     }
 }

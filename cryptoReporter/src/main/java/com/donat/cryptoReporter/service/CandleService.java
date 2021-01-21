@@ -6,4 +6,6 @@ import com.donat.cryptoReporter.dto.CandleDto;
 
 public interface CandleService {
     List<CandleDto> getCandleList(String currencyPair, Integer periodLength, Integer numberOfCandles);
+
+    List<CandleDto> getRecentCandles();
 }
