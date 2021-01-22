@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Candle } from '../shared/dto/candle.model';
 import { ReporterService } from './reporter.service';
 
@@ -9,7 +10,6 @@ import { ReporterService } from './reporter.service';
 })
 export class ReporterComponent implements OnInit {
 
-  recentCandles: Candle[];
   candleHistory: Candle[];
 
   favoritePeriod = '15p';
@@ -19,18 +19,11 @@ export class ReporterComponent implements OnInit {
   constructor(private reporterService: ReporterService) { }
 
   ngOnInit(): void {
-
-    //subscibe-olni a service object-jeire
+    this.reporterService.getRecentData();
   }
-
-  getRecentCryptoData() {
-    //this.cryptoService.getBloombergData();
-  }
-
+  
   getCryptoHistoryData(cryptoPair: string) {
     //this.cryptoService.getCryptoHistoryData(cryptoPair, 96, this.periodTranslate[this.periods.indexOf(this.favoritePeriod)]);
   }
-
-  //legyen unsubscibe is
 
 }
