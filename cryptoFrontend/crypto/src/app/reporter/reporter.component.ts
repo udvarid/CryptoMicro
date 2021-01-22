@@ -8,9 +8,7 @@ import { ReporterService } from './reporter.service';
   templateUrl: './reporter.component.html',
   styleUrls: ['./reporter.component.css']
 })
-export class ReporterComponent implements OnInit {
-
-  candleHistory: Candle[];
+export class ReporterComponent implements OnInit {  
 
   favoritePeriod = '15p';
   periods: string[] = ['15p', '1h', '4h', '1d', '1w'];
@@ -23,7 +21,7 @@ export class ReporterComponent implements OnInit {
   }
   
   getCryptoHistoryData(cryptoPair: string) {
-    //this.cryptoService.getCryptoHistoryData(cryptoPair, 96, this.periodTranslate[this.periods.indexOf(this.favoritePeriod)]);
+    this.reporterService.getCryptoHistoryData(cryptoPair, 96, this.periodTranslate[this.periods.indexOf(this.favoritePeriod)]);
   }
 
 }
