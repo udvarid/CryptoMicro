@@ -10,6 +10,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { HeaderComponent } from './header/header.component';
 import { ReporterComponent } from './reporter/reporter.component';
 import { RecentCandleComponent } from './shared/recent-candle/recent-candle.component';
+import { HistoryCandleComponent } from './shared/history-candle/history-candle.component';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 @NgModule({
   declarations: [
@@ -17,7 +19,8 @@ import { RecentCandleComponent } from './shared/recent-candle/recent-candle.comp
     InfoComponent,
     HeaderComponent,
     ReporterComponent,
-    RecentCandleComponent 
+    RecentCandleComponent,
+    HistoryCandleComponent
   ],
   imports: [
     BrowserModule,
@@ -25,7 +28,8 @@ import { RecentCandleComponent } from './shared/recent-candle/recent-candle.comp
     MaterialsModule,
     FormsModule,
     ReactiveFormsModule,
-    HttpClientModule
+    HttpClientModule,
+    NgxChartsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
