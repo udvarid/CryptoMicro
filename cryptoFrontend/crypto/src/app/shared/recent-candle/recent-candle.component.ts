@@ -16,21 +16,28 @@ export class RecentCandleComponent implements OnInit, OnDestroy {
   constructor(private reporterService: ReporterService) { }
 
   ngOnInit(): void {
-    this.recentCandlesSubscription = this.reporterService.recentCandles
-    .subscribe( (response: Candle[]) => {
-                this.recentCandles = response;
-                }
+    this.recentCandlesSubscription = this.reporterService.recentCandles.subscribe( 
+                    (response: Candle[]) => {this.recentCandles = response;}
               )    
+  }
 
+  getActualPrice(pair: string): number {
+    const price = this.recentCandles.find(candle => candle.currencyPair === pair).close;
+    const rounder = Math.pow(10, this.getRounder(price));
+    return Math.round(price * rounder) / rounder;
+  }
+
+  private getRounder(price: number) : number {
+    if (price > 1000) {
+      return 1;
+    } else if (price < 100) {
+      return 3;
+    }
+    return 2;
   }
 
   ngOnDestroy(): void {
     this.recentCandlesSubscription.unsubscribe();
   }
-
-  getActualPrice(pair: string): number {
-    return this.recentCandles.find(candle => candle.currencyPair === pair).close;
-  }
-
 
 }

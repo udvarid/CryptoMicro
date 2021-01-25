@@ -12,7 +12,7 @@ import { Candle } from '../dto/candle.model';
 export class HistoryCandleComponent implements OnInit, OnDestroy {
 
   private historyCandlesSubscription: Subscription = new Subscription();
-  private historyCandles: Candle[]; 
+  historyCandles: Candle[]; 
 
   chartStep: number;
   chartStepMultiplier: number;
@@ -44,10 +44,11 @@ export class HistoryCandleComponent implements OnInit, OnDestroy {
     this.chartStepMultiplier = window.innerWidth > 1600 ? 3 : 2;
     this.view = [this.chartStep * this.chartStepMultiplier * 5, this.chartStep * this.chartStepMultiplier * 2];
 
-    this.historyCandlesSubscription = this.reporterService.recentCandles
-    .subscribe( (response: Candle[]) => {
-                this.historyCandles = response;
-                }
+    this.historyCandlesSubscription = this.reporterService.historyCandles.subscribe( 
+                    (response: Candle[]) => {
+                      this.historyCandles = response;
+                      this.draw(this.historyCandles);
+                    }
               )    
   }
 
@@ -68,8 +69,9 @@ export class HistoryCandleComponent implements OnInit, OnDestroy {
         series: []
       };
       candles.forEach( candle => {
-        const onePoint = {
-          name: candle.time.substr(candle.time.length - 11).replace('T', ' '),
+        const indexOfT = candle.time.indexOf('T') + 1;        
+        const onePoint = {          
+          name: candle.time.substr(0, indexOfT + 5).replace('T', ' '),
           value: candle[ct.column]
         };
         transformedData.series.push(onePoint);
@@ -98,19 +100,19 @@ export class HistoryCandleComponent implements OnInit, OnDestroy {
 
 
   onSelect(data): void {
-    console.log('Item clicked', JSON.parse(JSON.stringify(data)));
+    //console.log('Item clicked', JSON.parse(JSON.stringify(data)));
   }
 
   onActivate(data): void {
-    console.log('Activate', JSON.parse(JSON.stringify(data)));
+    //console.log('Activate', JSON.parse(JSON.stringify(data)));
   }
 
   onDeactivate(data): void {
-    console.log('Deactivate', JSON.parse(JSON.stringify(data)));
+    //console.log('Deactivate', JSON.parse(JSON.stringify(data)));
   }
 
   ngOnDestroy(): void {
-    this.historyCandlesSubscription.unsubscribe();
+    //this.historyCandlesSubscription.unsubscribe();
   }
 
 }

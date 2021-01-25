@@ -12,6 +12,7 @@ import { ReporterComponent } from './reporter/reporter.component';
 import { RecentCandleComponent } from './shared/recent-candle/recent-candle.component';
 import { HistoryCandleComponent } from './shared/history-candle/history-candle.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
-    NgxChartsModule
+    NgxChartsModule,
+    BrowserAnimationsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
