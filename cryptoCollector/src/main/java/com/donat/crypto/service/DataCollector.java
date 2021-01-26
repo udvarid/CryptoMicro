@@ -61,7 +61,6 @@ public class DataCollector {
                         .count((Integer) rawCandle.get(8))
                         .build();
                 if (candleIsNew(latestInDB, candle)) {
-                    //TODO ennek lementése ne a H2-be, hanem egy PostgreSQL db-be menjen
                     candleRepository.saveAndFlush(candle);
                     newCandleSaved = true;
                 }
@@ -84,12 +83,9 @@ public class DataCollector {
 
 
     private String getUri(final Map.Entry<String, String> entry) {
-        final StringBuilder uri = new StringBuilder();
-        uri.append("https://api.binance.com/api/v3/klines?symbol=")
-                .append(entry.getKey())
-                .append("&interval=15m");
-        final String uriAddress = uri.toString();
-        return uriAddress;
+        return "https://api.binance.com/api/v3/klines?symbol=" +
+                entry.getKey() +
+                "&interval=15m";
     }
 
 }
