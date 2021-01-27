@@ -7,10 +7,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.donat.crypto.config.JmsConfig;
 import com.donat.crypto.domain.Candle;
+import com.donat.crypto.message.RefreshMessage;
 import com.donat.crypto.repository.CandleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -18,12 +21,15 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class DataCollector {
 
-    Map<String, String> currencyPairs;
+    final Map<String, String> currencyPairs;
 
     private final RestTemplate restTemplate;
 
     @Autowired
-    CandleRepository candleRepository;
+    private JmsTemplate jmsTemplate;
+
+    @Autowired
+    private CandleRepository candleRepository;
 
     public DataCollector(final RestTemplateBuilder restTemplateBuilder) {
         currencyPairs = fillUpCurrencyPair();
@@ -74,7 +80,12 @@ public class DataCollector {
     }
 
     private void sendMessage() {
-        //TODO JMS felé ünezetet küldeni
+        RefreshMessage message = RefreshMessage
+                .builder()
+                .message("Crypto prices have been refresehd")
+                .build();
+
+        jmsTemplate.convertAndSend(JmsConfig.MY_QUEUE, message);
     }
 
     private boolean candleIsNew(final LocalDateTime latestInDB, final Candle candle) {
