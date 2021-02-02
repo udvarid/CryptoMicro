@@ -26,15 +26,13 @@ export class ReporterService {
             this.recentCandles.next(response);                 
         });
     }
-
-    //http hívás a candle lista felé, eredményt eltárolni és egy subjectbe is
+    
     getCryptoHistoryData(cryptoPair: string, numberOfCandles: number, period: number) {
         this.historyCandlesSubscription.unsubscribe();
         const header = new HttpHeaders({});
         this.historyCandlesSubscription = this.http.get(this.pre + '/api/candle/list/' + cryptoPair + '/' + period + '/' + numberOfCandles, {headers: header,  withCredentials: true })
         .subscribe((response: Candle[]) => {
-            this.historyCandles.next(response);      
-            console.log(response);           
+            this.historyCandles.next(response);                  
         }); 
     }
 

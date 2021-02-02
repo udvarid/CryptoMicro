@@ -1,2 +1,2 @@
-sh initJMS.sh
 sh initPostgre.sh
+sh initJMS.sh
