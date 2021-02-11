@@ -1,0 +1,16 @@
+Values.yaml -> OK
+
+Collection backend
+Collection backend service
+Reporter backend
+Reporter backend service
+Angular Frontend
+Angular Frontend service
+Angular Frontend ingress
+Postgre db
+Postgre db service
+JMS
+JMS service
+persVolume
+persVolumeClaim
+
