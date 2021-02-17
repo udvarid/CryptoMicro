@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.backendCollector.name }}
+spec:
+  selector:
+    app: {{ .Values.backendCollector.name }}
+    tier: {{ .Values.backendCollector.name }}
+  ports:
+  - protocol: TCP
+    port: {{ .Values.backendCollector.port }}
+    targetPort: {{ .Values.backendCollector.port }}

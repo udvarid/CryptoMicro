@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.frontend.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.frontend.name }}
+      tier: {{ .Values.frontend.name }}
+      track: stable
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.frontend.name }}
+        tier: {{ .Values.frontend.name }}
+        track: stable
+    spec:
+      containers:
+      - name: nginx
+        image: {{ .Values.frontend.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.frontend.port }}

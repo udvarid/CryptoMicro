@@ -10,43 +10,11 @@ backendCollector:
     name: backendCollector
     image: udvaridonat/donat-crypto:cryptoCollector
     port: 8080
-    env:
-        db_service:
-            name: DB_SERVICE
-            value: postgres
-        db_user:
-            name: DB_USER
-            value: postgres
-        db_password:
-            name: DB_PASSWORD
-            value: crypto77
-        db_name:
-            name: DB_NAME            
-            value: postgres
-        jms_name:
-            name: JMS_NAME
-            value: artemis
-        jms_password:
-            name: JMS_PASSWORD
-            value: simetraehcapa
             
-backendCollector:
-    name: backendCollector
+backendReporter:
+    name: backendReporter
     image: udvaridonat/donat-crypto:cryptoReporter
     port: 8081
-    env:
-        db_service:
-            name: DB_SERVICE
-            value: postgres
-        db_user:
-            name: DB_USER
-            value: postgres
-        db_password:
-            name: DB_PASSWORD
-            value: crypto77
-        db_name:
-            name: DB_NAME            
-            value: postgres         
             
 frontend:            
     name: frontend
@@ -61,8 +29,28 @@ db:
     port: 5432
     version: postgres:12.2
     mountPath: /var/lib/postgresql/data
+    env:
+        db_service:
+            name: DB_SERVICE
+            value: postgres
+        db_user:
+            name: DB_USER
+            value: postgres
+        db_password:
+            name: DB_PASSWORD
+            value: crypto77
+        db_name:
+            name: DB_NAME            
+            value: postgres         
     
 jms:
     name: jms
     port: 61616
     version: vromero/activemq-artemis    
+        env:
+            jms_name:
+                name: JMS_NAME
+                value: artemis
+            jms_password:
+                name: JMS_PASSWORD
+                value: simetraehcapa

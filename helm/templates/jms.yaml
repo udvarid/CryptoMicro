@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.jms.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.jms.name }}
+      tier: {{ .Values.jms.name }}
+      track: stable
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.jms.name }}
+        tier: {{ .Values.jms.name }}
+        track: stable
+    spec:
+        containers:
+        - name: {{ .Values.jms.name }}
+          image: {{ .Values.jms.version }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          env:
+          - name: JMS_NAME
+            value: {{ .Values.jms.env.jms_name.value}}
+          - name: JMS_PASSWORD
+            value: {{ .Values.jms.env.jms_password.value}}
+          ports:
+          - name: http
+            containerPort: {{ .Values.jms.port }}

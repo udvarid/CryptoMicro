@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.backendCollector.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.backendCollector.name }}
+      tier: {{ .Values.backendCollector.name }}
+      track: stable
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.backendCollector.name }}
+        tier: {{ .Values.backendCollector.name }}
+        track: stable
+    spec:
+      containers:
+      - name: {{ .Values.backendCollector.name }}
+        image: {{ .Values.backendCollector.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.backendCollector.port }}
+        env:
+        - name: {{ .Values.db.env.db_service.name }}
+          value: {{ .Values.db.env.db_service.value }}
+        - name: {{ .Values.db.env.db_user.name }}
+          value: {{ .Values.db.env.db_user.value }}
+        - name: {{ .Values.db.env.db_password.name }}
+          value: {{ .Values.db.env.db_password.value }}
+        - name: {{ .Values.db.env.db_name.name }}
+          value: {{ .Values.db.env.db_name.value }}
+        - name: {{ .Values.jms.env.jms_name.name }}
+          value: {{ .Values.jms.env.jms_name.value }}
+        - name: {{ .Values.jms.env.jms_password.name }}
+          value: {{ .Values.jms.env.jms_password.value }}

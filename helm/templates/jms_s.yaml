@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.jms.name }}
+spec:
+  selector:
+    app: {{ .Values.jms.name }}
+    tier: {{ .Values.jms.name }}
+  ports:
+  - protocol: TCP
+    port: {{ .Values.jms.port }}
+    targetPort: {{ .Values.jms.port }}
