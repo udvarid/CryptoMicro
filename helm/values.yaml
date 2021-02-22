@@ -7,12 +7,12 @@ imagePullPolicy: Always
 nodePort: 32123
 
 backendCollector:
-    name: backendCollector
+    name: backend-collector
     image: udvaridonat/donat-crypto:cryptoCollector
     port: 8080
             
 backendReporter:
-    name: backendReporter
+    name: backend-reporter
     image: udvaridonat/donat-crypto:cryptoReporter
     port: 8081
             
@@ -47,10 +47,10 @@ jms:
     name: jms
     port: 61616
     version: vromero/activemq-artemis    
-        env:
-            jms_name:
-                name: JMS_NAME
-                value: artemis
-            jms_password:
-                name: JMS_PASSWORD
-                value: simetraehcapa
+    env:
+        jms_name:
+            name: JMS_NAME
+            value: artemis
+        jms_password:
+            name: JMS_PASSWORD
+            value: simetraehcapa
