@@ -10,5 +10,3 @@ spec:
   - protocol: TCP
     port: {{ .Values.frontend.port }}
     targetPort: {{ .Values.frontend.port }}
-    nodePort: {{ .Values.nodePort }}
-  type: NodePort

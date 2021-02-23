@@ -4,8 +4,6 @@ nameSpace: crypto
 
 imagePullPolicy: Always
 
-nodePort: 32123
-
 backendCollector:
     name: backend-collector
     image: udvaridonat/donat-crypto:cryptoCollector
@@ -14,7 +12,7 @@ backendCollector:
 backendReporter:
     name: backend-reporter
     image: udvaridonat/donat-crypto:cryptoReporter
-    port: 8081
+    port: 8080
             
 frontend:            
     name: frontend

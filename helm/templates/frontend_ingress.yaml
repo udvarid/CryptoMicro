@@ -5,12 +5,16 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/rewrite-target: /api/$2
 spec:
  rules:
  - host: crypto
    http:
      paths:   
+     - path: /api(/|$)(.*)
+       backend:
+         serviceName: {{ .Values.backendReporter.name }}
+         servicePort: {{ .Values.backendReporter.port }}     
      - path: /?(.*)
        backend:
          serviceName: {{ .Values.frontend.name }}
