@@ -7,6 +7,7 @@ import java.util.Random;
 
 import com.donat.cryptoReporter.domain.Candle;
 import com.donat.cryptoReporter.repository.CandleRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,9 @@ public class Starter implements CommandLineRunner {
     private final CandleRepository candleRepository;
 
     Map<String, CryptoStarterInfo> currencyPairs;
+
+    @Value("${spring.profiles.active:Unknown}")
+    private String activeProfile;
 
     public Starter(CandleRepository candleRepository) {
         this.candleRepository = candleRepository;
@@ -43,7 +47,7 @@ public class Starter implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (candleRepository.count() == 0) {
+        if (!activeProfile.equals("prod") && candleRepository.count() == 0) {
             loadCandleObjects();
         }
     }

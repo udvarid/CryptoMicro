@@ -37,10 +37,10 @@ public class DataCollector {
     }
 
     private Map<String, String> fillUpCurrencyPair() {
-        final Map<String, String> currencyPairs = new HashMap<>();
-        currencyPairs.put("BTCUSDT", "BTC-USD");
-        currencyPairs.put("ETHUSDT", "ETH-USD");
-        return currencyPairs;
+        final Map<String, String> currencyPairsToFill = new HashMap<>();
+        currencyPairsToFill.put("BTCUSDT", "BTC-USD");
+        currencyPairsToFill.put("ETHUSDT", "ETH-USD");
+        return currencyPairsToFill;
     }
 
     @Scheduled(fixedDelay = 15000)
@@ -53,22 +53,24 @@ public class DataCollector {
             final Object[] response =
                     restTemplate.getForObject(uriAddress, Object[].class);
             final LocalDateTime latestInDB = candleRepository.getLatestCandle(entry.getValue());
-            for (final Object o : response) {
-                final ArrayList<Object> rawCandle = (ArrayList) o;
-                final Date datum = new Date((Long) rawCandle.get(0));
-                final Candle candle = Candle.builder()
-                        .time(datum.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
-                        .currencyPair(entry.getValue())
-                        .open(Double.parseDouble((String) rawCandle.get(1)))
-                        .high(Double.parseDouble((String) rawCandle.get(2)))
-                        .low(Double.parseDouble((String) rawCandle.get(3)))
-                        .close(Double.parseDouble((String) rawCandle.get(4)))
-                        .volume(Double.parseDouble((String) rawCandle.get(5)))
-                        .count((Integer) rawCandle.get(8))
-                        .build();
-                if (candleIsNew(latestInDB, candle)) {
-                    candleRepository.saveAndFlush(candle);
-                    newCandleSaved = true;
+            if (response != null) {
+                for (final Object o : response) {
+                    final ArrayList<Object> rawCandle = (ArrayList) o;
+                    final Date datum = new Date((Long) rawCandle.get(0));
+                    final Candle candle = Candle.builder()
+                            .time(datum.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
+                            .currencyPair(entry.getValue())
+                            .open(Double.parseDouble((String) rawCandle.get(1)))
+                            .high(Double.parseDouble((String) rawCandle.get(2)))
+                            .low(Double.parseDouble((String) rawCandle.get(3)))
+                            .close(Double.parseDouble((String) rawCandle.get(4)))
+                            .volume(Double.parseDouble((String) rawCandle.get(5)))
+                            .count((Integer) rawCandle.get(8))
+                            .build();
+                    if (candleIsNew(latestInDB, candle)) {
+                        candleRepository.saveAndFlush(candle);
+                        newCandleSaved = true;
+                    }
                 }
             }
         }
@@ -82,7 +84,7 @@ public class DataCollector {
     private void sendMessage() {
         RefreshMessage message = RefreshMessage
                 .builder()
-                .message("Crypto prices have been refresehd")
+                .message("Crypto prices have been refreshed")
                 .build();
 
         jmsTemplate.convertAndSend(JmsConfig.MY_QUEUE, message);

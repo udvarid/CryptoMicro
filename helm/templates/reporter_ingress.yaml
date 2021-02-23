@@ -7,10 +7,10 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
  rules:
- - host: minikube
+ - host: crypto-reporter
    http:
      paths:     
-     - path: /api/?(.*)
+     - path: /?(.*)
        backend:
          serviceName: {{ .Values.backendReporter.name }}
          servicePort: {{ .Values.backendReporter.port }}

@@ -1,6 +1,6 @@
 replicaCount: 1
 
-nameSpace: chess
+nameSpace: crypto
 
 imagePullPolicy: Always
 
