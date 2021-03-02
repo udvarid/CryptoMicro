@@ -7,9 +7,15 @@ import { Component, OnInit } from '@angular/core';
 })
 export class HeaderComponent implements OnInit {
 
+  isAuthenticated = false;
+
   constructor() { }
 
   ngOnInit(): void {
+  }
+
+  onLogout() {
+    
   }
 
 }

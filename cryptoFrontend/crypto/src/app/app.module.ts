@@ -13,6 +13,8 @@ import { RecentCandleComponent } from './shared/recent-candle/recent-candle.comp
 import { HistoryCandleComponent } from './shared/history-candle/history-candle.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { AuthComponent } from './auth/auth.component';
+import { UserComponent } from './user/user.component';
 
 @NgModule({
   declarations: [
@@ -21,7 +23,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     HeaderComponent,
     ReporterComponent,
     RecentCandleComponent,
-    HistoryCandleComponent
+    HistoryCandleComponent,
+    AuthComponent,
+    UserComponent
   ],
   imports: [
     BrowserModule,
