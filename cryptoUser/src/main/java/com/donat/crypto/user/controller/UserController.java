@@ -20,12 +20,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
 
     public static final String SESSION_ID = "sessionId";
     public static final String NAME = "name";
+    public static final String USER_ID = "userId";
     @Autowired
     private UserService userService;
 
@@ -34,6 +35,7 @@ public class UserController {
         AuthenticationInfo authenticationInfo = userService.register(registerDto);
         response.addHeader(SESSION_ID, authenticationInfo.getSessionId());
         response.addHeader(NAME, authenticationInfo.getName());
+        response.addHeader(USER_ID, registerDto.getUserId());
         return new ResponseEntity(HttpStatus.OK);
     }
 
@@ -42,6 +44,7 @@ public class UserController {
         AuthenticationInfo authenticationInfo = userService.login(userLoginDto);
         response.addHeader(SESSION_ID, authenticationInfo.getSessionId());
         response.addHeader(NAME, authenticationInfo.getName());
+        response.addHeader(USER_ID, userLoginDto.getUserId());
         return new ResponseEntity(HttpStatus.OK);
     }
 

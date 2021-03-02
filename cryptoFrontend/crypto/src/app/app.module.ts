@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { MaterialsModule } from './shared/materials.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
 import { InfoComponent } from './info/info.component';
@@ -15,6 +15,7 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AuthComponent } from './auth/auth.component';
 import { UserComponent } from './user/user.component';
+import { SessionInterceptor } from './shared/interceptors/http-session.interceptor';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,13 @@ import { UserComponent } from './user/user.component';
     NgxChartsModule,
     BrowserAnimationsModule
   ],
-  providers: [],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: SessionInterceptor,
+      multi: true
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
