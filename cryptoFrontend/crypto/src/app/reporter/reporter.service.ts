@@ -16,7 +16,7 @@ export class ReporterService {
     historyCandles = new Subject<Candle[]>();
 
     constructor(private http: HttpClient, private router: Router) {
-        this.pre = environment.apiUrl;
+        this.pre = environment.apiUrl_report;
     }    
 
     getRecentData() {        
