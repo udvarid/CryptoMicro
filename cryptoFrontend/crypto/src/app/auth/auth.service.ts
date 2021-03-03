@@ -20,7 +20,7 @@ export class AuthService {
 
     async logout() {
         const header = new HttpHeaders({});        
-        await this.http.get(this.pre + '/api/user/logout', {headers: header}).toPromise();
+        await this.http.get(this.pre + '/user/logout', {headers: header}).toPromise();
         this.authenticated.next(false);
         const emptyUser: UserDto = {
           name: null,
@@ -33,7 +33,7 @@ export class AuthService {
     public login(userLogin: UserLoginDto) {           
         console.log(this.pre);
         const header = new HttpHeaders({});        
-        this.http.post(this.pre + '/api/user/login', userLogin, {headers: header})
+        this.http.post(this.pre + 'http://localhost:8082/user/login', userLogin, {headers: header})
           .pipe(tap(resp => resp['headers'].get('ReturnStatus')))
           .subscribe((resp) => {
             this.cookieService.set('sessionId', resp['headers']['headers'].get('sessionId')[0]);    
@@ -44,7 +44,7 @@ export class AuthService {
 
     public register(userRegister: RegisterDto) {   
         const header = new HttpHeaders({});        
-        this.http.post(this.pre + '/api/user/register', userRegister, {headers: header})
+        this.http.post(this.pre + '/user/register', userRegister, {headers: header})
           .pipe(tap(resp => resp['headers'].get('ReturnStatus')))
           .subscribe((resp) => {
             this.cookieService.set('sessionId', resp['headers']['headers'].get('sessionId')[0]);    

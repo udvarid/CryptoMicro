@@ -39,11 +39,7 @@ import { SessionInterceptor } from './shared/interceptors/http-session.intercept
     BrowserAnimationsModule
   ],
   providers: [
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: SessionInterceptor,
-      multi: true
-    }
+    { provide: HTTP_INTERCEPTORS, useClass: SessionInterceptor, multi: true }
   ],
   bootstrap: [AppComponent]
 })
