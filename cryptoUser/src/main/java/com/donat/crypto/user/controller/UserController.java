@@ -53,4 +53,9 @@ public class UserController {
         userService.logout(request.getHeader(SESSION_ID));
         return new ResponseEntity(HttpStatus.OK);
     }
+
+    @GetMapping("/userinfo")
+    public UserDto getUserInfo(@Context HttpServletRequest request) throws CryptoException {
+        return userService.getUserInfo(request.getHeader(SESSION_ID), request.getHeader(USER_ID));
+    }
 }

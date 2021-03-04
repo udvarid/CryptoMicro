@@ -3,6 +3,7 @@ package com.donat.crypto.user.service.implementation;
 import javax.transaction.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import com.donat.crypto.user.controller.AuthenticationInfo;
 import com.donat.crypto.user.domain.User;
@@ -10,6 +11,7 @@ import com.donat.crypto.user.domain.Wallet;
 import com.donat.crypto.user.domain.enums.CCY;
 import com.donat.crypto.user.domain.enums.TransactionType;
 import com.donat.crypto.user.dto.RegisterDto;
+import com.donat.crypto.user.dto.UserDto;
 import com.donat.crypto.user.dto.UserLoginDto;
 import com.donat.crypto.user.exception.CryptoException;
 import com.donat.crypto.user.repository.UserRepository;
@@ -19,8 +21,6 @@ import com.donat.crypto.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import static com.donat.crypto.user.domain.enums.TransactionType.NORMAL;
 
 @Service
 @RequiredArgsConstructor
@@ -86,6 +86,19 @@ public class UserServiceImpl implements UserService {
         walletRepository.saveAndFlush(transaction);
         user.getWallets().add(transaction);
         userRepository.saveAndFlush(user);
+    }
+
+    @Override
+    public UserDto getUserInfo(String sessionId, String userId) throws CryptoException {
+        if (!authenticatorService.validateSession(sessionId, userId)) {
+            throw new CryptoException("Session id is not valid for this userId");
+        }
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new CryptoException("No such a user"));
+        //TODO vagyon elemek összesítése
+        return UserDto.builder()
+                .userId(userId)
+                .name(user.getName())
+                .build();
     }
 
     private User createUser(final RegisterDto registerDto) {

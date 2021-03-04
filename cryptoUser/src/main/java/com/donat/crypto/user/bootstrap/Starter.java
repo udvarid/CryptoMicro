@@ -1,6 +1,5 @@
 package com.donat.crypto.user.bootstrap;
 
-import com.donat.crypto.user.domain.enums.TransactionType;
 import com.donat.crypto.user.dto.RegisterDto;
 import com.donat.crypto.user.repository.UserRepository;
 import com.donat.crypto.user.service.UserService;
@@ -8,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import static com.donat.crypto.user.domain.enums.CCY.BTH;
 import static com.donat.crypto.user.domain.enums.CCY.USD;
 import static com.donat.crypto.user.domain.enums.TransactionType.NORMAL;
 
