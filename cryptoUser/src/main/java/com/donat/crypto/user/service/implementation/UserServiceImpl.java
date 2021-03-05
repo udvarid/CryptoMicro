@@ -3,7 +3,10 @@ package com.donat.crypto.user.service.implementation;
 import javax.transaction.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.donat.crypto.user.controller.AuthenticationInfo;
 import com.donat.crypto.user.domain.User;
@@ -19,6 +22,8 @@ import com.donat.crypto.user.repository.WalletRepository;
 import com.donat.crypto.user.service.AuthenticatorService;
 import com.donat.crypto.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -94,11 +99,23 @@ public class UserServiceImpl implements UserService {
             throw new CryptoException("Session id is not valid for this userId");
         }
         User user = userRepository.findByUserId(userId).orElseThrow(() -> new CryptoException("No such a user"));
-        //TODO vagyon elemek összesítése
+        Map<CCY, Double> wallets = Arrays.stream(CCY.values())
+                .map(ccy -> ImmutablePair.of(ccy, sumOfCcy(ccy, user.getWallets())))
+                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
         return UserDto.builder()
                 .userId(userId)
                 .name(user.getName())
+                .wallets(wallets)
                 .build();
+    }
+
+    private Double sumOfCcy(final CCY ccy, final Set<Wallet> wallets) {
+        return wallets.stream()
+                .filter(w -> !TransactionType.LOAN.equals(w.getTransactionType()))
+                .filter(w -> ccy.equals(w.getCcy()))
+                .map(Wallet::getAmount)
+                .reduce(Double::sum)
+                .orElse(0D);
     }
 
     private User createUser(final RegisterDto registerDto) {
