@@ -43,7 +43,7 @@ public class Wallet {
     private Double amount;
 
     @UpdateTimestamp
-    private LocalDateTime lastUpdate;
+    private LocalDateTime timeOfTransaction;
 
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;

@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { UserDto } from '../shared/dto/user.model';
+import { UserService } from './user.service';
 
 @Component({
   selector: 'app-user',
@@ -10,18 +11,23 @@ import { UserDto } from '../shared/dto/user.model';
 })
 export class UserComponent implements OnInit, OnDestroy {
 
-  actualUser: UserDto;
+  public userInfo: UserDto;
+  userInfoChanged: Subscription;
 
-  actualUserChanged: Subscription;
-
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService, private userService: UserService) { }
 
   ngOnInit(): void {
-    this.actualUserChanged = this.authService.userName.subscribe(user => this.actualUser = user);
+    this.userInfoChanged = this.userService.userInfo.subscribe(user => {
+            this.userInfo = user;
+            console.log(this.userInfo);
+          }      
+      );
+    this.userService.getWallet(this.authService.getActiveUser().userId);
   }
+  
 
   ngOnDestroy(): void {
-    this.actualUserChanged.unsubscribe();
+    this.userInfoChanged.unsubscribe();
   }
 
 

@@ -14,10 +14,9 @@ export class AuthService {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
       observe: "response" as 'body'
     };
-
     
     authenticated = new Subject<boolean>();
-    userName = new Subject<UserDto>();
+    userName : UserDto;
     pre: string;
 
     constructor(private http: HttpClient, private router: Router, private cookieService: CookieService) {
@@ -30,10 +29,11 @@ export class AuthService {
         this.authenticated.next(false);
         const emptyUser: UserDto = {
           name: null,
-          userId: null
+          userId: null,
+          wallets: null
         };
-        this.userName.next(emptyUser);       
-        this.cookieService.set('sessionId', null);    
+        this.userName = emptyUser;       
+        this.cookieService.set('sessionid', null);    
         this.cookieService.set('name', null);    
         this.cookieService.set('userid', null);    
         this.router.navigate(['/auth']);
@@ -43,15 +43,16 @@ export class AuthService {
         this.http.post(this.pre + '/user/login', userLogin,  this.header_for_post)
           .pipe(tap(resp => resp['headers'].get('ReturnStatus')))          
           .subscribe((response) => {            
-            this.cookieService.set('sessionId', response['headers']['headers'].get('sessionid'));    
+            this.cookieService.set('sessionid', response['headers']['headers'].get('sessionid'));    
             this.cookieService.set('name', response['headers']['headers'].get('name'));    
             this.cookieService.set('userid', response['headers']['headers'].get('userid'));    
             this.authenticated.next(true);
             const loggedInUser: UserDto = {
-              name: response['headers']['headers'].get('name'),
-              userId: response['headers']['headers'].get('userid')
-            };
-            this.userName.next(loggedInUser);
+              name: response['headers']['headers'].get('name')[0],
+              userId: response['headers']['headers'].get('userid')[0],
+              wallets: null
+            };            
+            this.userName = loggedInUser;            
             this.router.navigate(['/user']);  
           });
     };
@@ -62,18 +63,23 @@ export class AuthService {
         this.http.post(this.pre + '/user/register', userRegister, this.header_for_post)
           .pipe(tap(resp => resp['headers'].get('ReturnStatus')))
           .subscribe((response) => {            
-            this.cookieService.set('sessionId', response['headers']['headers'].get('sessionid'));    
+            this.cookieService.set('sessionid', response['headers']['headers'].get('sessionid'));    
             this.cookieService.set('name', response['headers']['headers'].get('name'));    
             this.cookieService.set('userid', response['headers']['headers'].get('userid'));    
             this.authenticated.next(true);
             const registeredUser: UserDto = {
               name: response['headers']['headers'].get('name'),
-              userId: response['headers']['headers'].get('userid')
+              userId: response['headers']['headers'].get('userid'),
+              wallets: null
             };
-            this.userName.next(registeredUser);
+            this.userName = registeredUser;
             this.router.navigate(['/user']);  
           });
 
     };    
+
+    public getActiveUser(): UserDto {
+      return this.userName;
+    }
 
 }

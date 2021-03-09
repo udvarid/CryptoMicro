@@ -87,6 +87,7 @@ public class UserServiceImpl implements UserService {
                 .ccy(ccy)
                 .amount(amount)
                 .transactionType(type)
+                .timeOfTransaction(LocalDateTime.now())
                 .build();
         walletRepository.saveAndFlush(transaction);
         user.getWallets().add(transaction);

@@ -10,7 +10,7 @@ export class SessionInterceptor implements HttpInterceptor {
 
     request = request.clone({
       setHeaders: {
-        sessionId: this.cookieService.get('sessionsId')
+        sessionid: this.cookieService.get('sessionid')
       }
     });
     return next.handle(request);

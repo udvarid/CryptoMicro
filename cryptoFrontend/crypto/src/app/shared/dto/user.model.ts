@@ -1,6 +1,7 @@
 export interface UserDto {
     userId: string;
     name: string;
+    wallets: Map<string, number>
 }
 
 export interface UserLoginDto {
@@ -13,4 +14,3 @@ export interface RegisterDto {
     password: string;
     name: string;
 }
-
