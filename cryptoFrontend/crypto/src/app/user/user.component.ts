@@ -1,34 +1,15 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { AuthService } from '../auth/auth.service';
-import { UserDto } from '../shared/dto/user.model';
-import { UserService } from './user.service';
 
 @Component({
   selector: 'app-user',
   templateUrl: './user.component.html',
   styleUrls: ['./user.component.css']
 })
-export class UserComponent implements OnInit, OnDestroy {
+export class UserComponent implements OnInit {
 
-  public userInfo: UserDto;
-  userInfoChanged: Subscription;
+  constructor() { }
 
-  constructor(private authService: AuthService, private userService: UserService) { }
-
-  ngOnInit(): void {
-    this.userInfoChanged = this.userService.userInfo.subscribe(user => {
-            this.userInfo = user;
-            console.log(this.userInfo);
-          }      
-      );
-    this.userService.getWallet(this.authService.getActiveUser().userId);
-  }
+  ngOnInit(): void { }
   
-
-  ngOnDestroy(): void {
-    this.userInfoChanged.unsubscribe();
-  }
-
 
 }

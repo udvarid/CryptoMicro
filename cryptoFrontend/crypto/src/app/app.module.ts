@@ -16,6 +16,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AuthComponent } from './auth/auth.component';
 import { UserComponent } from './user/user.component';
 import { SessionInterceptor } from './shared/interceptors/http-session.interceptor';
+import { UserDetailComponent } from './user/user-detail/user-detail.component';
+import { UserHistoryComponent } from './user/user-history/user-history.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +28,9 @@ import { SessionInterceptor } from './shared/interceptors/http-session.intercept
     RecentCandleComponent,
     HistoryCandleComponent,
     AuthComponent,
-    UserComponent
+    UserComponent,
+    UserDetailComponent,
+    UserHistoryComponent
   ],
   imports: [
     BrowserModule,

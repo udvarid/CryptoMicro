@@ -16,6 +16,7 @@ import com.donat.crypto.user.domain.enums.TransactionType;
 import com.donat.crypto.user.dto.RegisterDto;
 import com.donat.crypto.user.dto.UserDto;
 import com.donat.crypto.user.dto.UserLoginDto;
+import com.donat.crypto.user.dto.WalletDto;
 import com.donat.crypto.user.exception.CryptoException;
 import com.donat.crypto.user.repository.UserRepository;
 import com.donat.crypto.user.repository.WalletRepository;
@@ -26,6 +27,9 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import static com.donat.crypto.user.domain.enums.CCY.USD;
+import static com.donat.crypto.user.domain.enums.TransactionType.NORMAL;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +55,9 @@ public class UserServiceImpl implements UserService {
             throw new CryptoException("Password invalid");
         }
 
-        userRepository.saveAndFlush(createUser(registerDto));
+        User user = userRepository.saveAndFlush(createUser(registerDto));
+
+        changeWallet(user.getUserId(), USD, NORMAL, 1000000D);
 
         return AuthenticationInfo.builder()
                 .name(registerDto.getName())
@@ -100,9 +106,10 @@ public class UserServiceImpl implements UserService {
             throw new CryptoException("Session id is not valid for this userId");
         }
         User user = userRepository.findByUserId(userId).orElseThrow(() -> new CryptoException("No such a user"));
-        Map<CCY, Double> wallets = Arrays.stream(CCY.values())
-                .map(ccy -> ImmutablePair.of(ccy, sumOfCcy(ccy, user.getWallets())))
-                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+        Set<WalletDto> wallets = Arrays.stream(CCY.values())
+                .map(ccy -> new WalletDto(ccy.toString(), sumOfCcy(ccy, user.getWallets())))
+                .collect(Collectors.toSet());
+
         return UserDto.builder()
                 .userId(userId)
                 .name(user.getName())

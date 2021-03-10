@@ -1,0 +1,25 @@
+<strong class="myHead">Detailed user information</strong>
+<hr>
+<strong class="myHead">Name : {{userInfo.name}}</strong>
+<hr>
+<strong class="myHead">Netto assets:</strong>
+<br>
+--------------------------------------------------
+
+<div>    
+    <ul class="list-group">        
+        <li
+        class="list-group-item"        
+        *ngFor="let ccy of ccys; let i = index"        
+        >
+        {{ccy.ccy}} - {{ccy.amount | number:'1.3'}}        
+        </li>        
+    </ul>
+</div>
+<strong class="myHead">Brutto assets:</strong>
+<br>
+--------------------------------------------------
+<br>
+<strong class="myHead">Loans:</strong>
+<br>
+--------------------------------------------------

@@ -1,7 +1,5 @@
 package com.donat.crypto.user.dto;
 
-import java.util.Set;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,11 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserDto {
+public class WalletDto {
 
-    private String name;
+    private String ccy;
 
-    private String userId;
-
-    private Set<WalletDto> wallets;
+    private Double amount;
 }
