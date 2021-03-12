@@ -3,6 +3,8 @@ package com.donat.crypto.user.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.donat.crypto.user.domain.enums.CCY;
+import com.donat.crypto.user.domain.enums.TransactionType;
 import com.donat.crypto.user.dto.RegisterDto;
 import com.donat.crypto.user.dto.UserDto;
 import com.donat.crypto.user.dto.UserLoginDto;
@@ -33,6 +35,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody RegisterDto registerDto, @Context HttpServletResponse response) throws CryptoException {
         AuthenticationInfo authenticationInfo = userService.register(registerDto);
+        userService.changeWallet(authenticationInfo.getUserId(), CCY.USD, TransactionType.NORMAL, 1000000D);
         response.addHeader(SESSION_ID, authenticationInfo.getSessionId());
         response.addHeader(NAME, authenticationInfo.getName());
         response.addHeader(USER_ID, registerDto.getUserId());

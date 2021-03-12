@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.backendUser.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.backendUser.name }}
+      tier: {{ .Values.backendUser.name }}
+      track: stable
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.backendUser.name }}
+        tier: {{ .Values.backendUser.name }}
+        track: stable
+    spec:
+      containers:
+      - name: {{ .Values.backendUser.name }}
+        image: {{ .Values.backendUser.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.backendUser.port }}
+        env:
+        - name: {{ .Values.db.env.db_service.name }}
+          value: {{ .Values.db.env.db_service.value }}
+        - name: {{ .Values.db.env.db_user.name }}
+          value: {{ .Values.db.env.db_user.value }}
+        - name: {{ .Values.db.env.db_password.name }}
+          value: {{ .Values.db.env.db_password.value }}
+        - name: {{ .Values.db.env.db_name.name }}
+          value: {{ .Values.db.env.db_name.value }}

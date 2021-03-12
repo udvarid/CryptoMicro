@@ -1,5 +1,5 @@
 export const environment = {
   production: true,  
-  apiUrl_report: 'backend-reporter',
-  apiUrl_user: 'backend-user'
+  apiUrl_report: '',
+  apiUrl_user: ''
 };

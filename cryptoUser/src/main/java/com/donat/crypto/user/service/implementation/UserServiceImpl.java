@@ -4,7 +4,6 @@ import javax.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,8 +22,6 @@ import com.donat.crypto.user.repository.WalletRepository;
 import com.donat.crypto.user.service.AuthenticatorService;
 import com.donat.crypto.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,9 +52,7 @@ public class UserServiceImpl implements UserService {
             throw new CryptoException("Password invalid");
         }
 
-        User user = userRepository.saveAndFlush(createUser(registerDto));
-
-        changeWallet(user.getUserId(), USD, NORMAL, 1000000D);
+        userRepository.saveAndFlush(createUser(registerDto));
 
         return AuthenticationInfo.builder()
                 .name(registerDto.getName())

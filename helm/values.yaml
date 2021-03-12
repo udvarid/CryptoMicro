@@ -13,6 +13,11 @@ backendReporter:
     name: backend-reporter
     image: udvaridonat/donat-crypto:cryptoReporter
     port: 8080
+    
+backendUser:
+    name: backend-user
+    image: udvaridonat/donat-crypto:cryptoUser
+    port: 8080    
             
 frontend:            
     name: frontend
