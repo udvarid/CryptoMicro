@@ -25,9 +25,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static com.donat.crypto.user.domain.enums.CCY.USD;
-import static com.donat.crypto.user.domain.enums.TransactionType.NORMAL;
-
 @Service
 @RequiredArgsConstructor
 @Transactional

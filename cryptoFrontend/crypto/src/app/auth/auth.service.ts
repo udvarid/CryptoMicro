@@ -25,7 +25,7 @@ export class AuthService {
 
     async logout() {
         const header = new HttpHeaders({});        
-        await this.http.get(this.pre + '/user/logout', {headers: header}).toPromise();
+        await this.http.get(this.pre + '/api/user/logout', {headers: header}).toPromise();
         this.authenticated.next(false);
         const emptyUser: UserDto = {
           name: null,
@@ -40,7 +40,7 @@ export class AuthService {
     }
 
     public login(userLogin: UserLoginDto) {                           
-        this.http.post(this.pre + '/user/login', userLogin,  this.header_for_post)
+        this.http.post(this.pre + '/api/user/login', userLogin,  this.header_for_post)
           .pipe(tap(resp => resp['headers'].get('ReturnStatus')))          
           .subscribe((response) => {            
             this.cookieService.set('sessionid', response['headers']['headers'].get('sessionid'));    
@@ -60,7 +60,7 @@ export class AuthService {
 
     public register(userRegister: RegisterDto) {   
         const header = new HttpHeaders({});        
-        this.http.post(this.pre + '/user/register', userRegister, this.header_for_post)
+        this.http.post(this.pre + '/api/user/register', userRegister, this.header_for_post)
           .pipe(tap(resp => resp['headers'].get('ReturnStatus')))
           .subscribe((response) => {            
             this.cookieService.set('sessionid', response['headers']['headers'].get('sessionid'));    

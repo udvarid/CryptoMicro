@@ -21,7 +21,7 @@ export class ReporterService {
 
     getRecentData() {        
         const header = new HttpHeaders({});
-        this.http.get(this.pre + '/api/candle/recent', {headers: header,  withCredentials: true })
+        this.http.get(this.pre + '/api/candle/recent', {headers: header})
         .subscribe((response: Candle[]) => {
             this.recentCandles.next(response);                 
         });
@@ -30,7 +30,7 @@ export class ReporterService {
     getCryptoHistoryData(cryptoPair: string, numberOfCandles: number, period: number) {
         this.historyCandlesSubscription.unsubscribe();
         const header = new HttpHeaders({});
-        this.historyCandlesSubscription = this.http.get(this.pre + '/api/candle/list/' + cryptoPair + '/' + period + '/' + numberOfCandles, {headers: header,  withCredentials: true })
+        this.historyCandlesSubscription = this.http.get(this.pre + '/api/candle/list/' + cryptoPair + '/' + period + '/' + numberOfCandles, {headers: header})
         .subscribe((response: Candle[]) => {
             this.historyCandles.next(response);                  
         }); 

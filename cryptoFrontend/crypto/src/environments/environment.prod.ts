@@ -1,5 +1,4 @@
 export const environment = {
   production: true,  
-  apiUrl_report: '',
-  apiUrl_user: ''
-};
+  apiUrl_report: 'http://crypto-report',
+  apiUrl_user: 'http://crypto-user'};

@@ -20,7 +20,7 @@ export class UserService {
 
     public getWallet(userId: string) {    
         const header = new HttpHeaders({userId: userId});
-        this.http.get(this.pre + '/user/userinfo', {headers: header})          
+        this.http.get(this.pre + '/api/user/userinfo', {headers: header})          
           .subscribe((response: UserDto) => {                        
               this.userInfo.next(response);
           });
