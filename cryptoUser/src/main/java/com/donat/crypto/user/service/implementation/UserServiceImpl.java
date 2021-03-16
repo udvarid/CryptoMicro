@@ -4,6 +4,8 @@ import javax.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -88,7 +90,9 @@ public class UserServiceImpl implements UserService {
                 .timeOfTransaction(LocalDateTime.now())
                 .build();
         walletRepository.saveAndFlush(transaction);
-        user.getWallets().add(transaction);
+        Set<Wallet> wallets = new HashSet<>();
+        wallets.add(transaction);
+        user.setWallets(wallets);
         userRepository.saveAndFlush(user);
     }
 
