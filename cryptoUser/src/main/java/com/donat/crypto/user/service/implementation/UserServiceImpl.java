@@ -4,10 +4,9 @@ import javax.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.donat.crypto.user.controller.AuthenticationInfo;
 import com.donat.crypto.user.domain.User;
@@ -90,10 +89,16 @@ public class UserServiceImpl implements UserService {
                 .timeOfTransaction(LocalDateTime.now())
                 .build();
         walletRepository.saveAndFlush(transaction);
-        Set<Wallet> wallets = new HashSet<>();
-        wallets.add(transaction);
-        user.setWallets(wallets);
+        addWalletToUser(user, transaction);
         userRepository.saveAndFlush(user);
+    }
+
+    private void addWalletToUser(User user, Wallet transaction) {
+        if (user.getWallets() == null) {
+            user.setWallets(Stream.of(transaction).collect(Collectors.toSet()));
+        } else {
+            user.getWallets().add(transaction);
+        }
     }
 
     @Override
