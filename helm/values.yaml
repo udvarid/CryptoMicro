@@ -28,6 +28,11 @@ frontend:
     name: frontend
     image: udvaridonat/donat-crypto:frontend
     port: 4200
+    env:
+        crypto_report:
+            name: CRYPTO_REPORT 
+        crypto_user:
+            name: CRYPTO_USER
     
 volume:
     path: /data/pvCrypto/

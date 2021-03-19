@@ -23,3 +23,8 @@ spec:
         ports:
         - name: http
           containerPort: {{ .Values.frontend.port }}
+        env:
+        - name: {{ .Values.frontend.env.crypto_report.name }}
+          value: {{ .Values.backendReporter.name }}
+        - name: {{ .Values.frontend.env.crypto_user.name }}
+          value: {{ .Values.backendUser.name}}                    
