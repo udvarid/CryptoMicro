@@ -25,7 +25,7 @@ export class ReporterComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {    
     this.recentCandlesSubscription = this.reporterService.recentCandles.subscribe( 
-      (response: Candle[]) => {this.recentCandles = response;})    
+      (response: Candle[]) => {this.recentCandles = response;})        
 
     const checkIn = () => {
       this.reporterService.getRecentData();
@@ -34,6 +34,7 @@ export class ReporterComponent implements OnInit, OnDestroy {
           this.oldRecentCandles = this.recentCandles;
       }      
     }
+    checkIn();
     this.timer = setInterval(checkIn, 60000);
 
   }

@@ -1,4 +1,4 @@
-package com.donat.crypto.config;
+package com.donat.crypto.reporter.config;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;

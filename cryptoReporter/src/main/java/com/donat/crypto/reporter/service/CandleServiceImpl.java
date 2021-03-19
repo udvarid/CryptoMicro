@@ -1,40 +1,49 @@
 package com.donat.crypto.reporter.service;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.donat.crypto.reporter.dto.CandleDto;
-import com.donat.crypto.reporter.dto.mapper.CandleMapper;
-import com.donat.crypto.reporter.repository.CandleRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
-@RequiredArgsConstructor
-@Transactional
-public class CandleServiceImpl implements CandleService{
+public class CandleServiceImpl implements CandleService {
 
     @Autowired
-    private CandleRepository candleRepository;
+    private Environment env;
 
-    @Autowired
-    private CandleMapper candleMapper;
+    final private RestTemplate restTemplate;
+
+    public CandleServiceImpl(final RestTemplateBuilder restTemplateBuilder) {
+        restTemplate = restTemplateBuilder.build();
+    }
 
     @Override
-    public List<CandleDto> getCandleList(String currencyPair, Integer periodLength, Integer numberOfCandles) {
-        List<CandleDto> candles = candleMapper.candleListToCandleDtoList(candleRepository
-                .getAllByCurrencyPair(currencyPair, numberOfCandles * periodLength));
+    public List<CandleDto> getCandleList(final String currencyPair, final Integer periodLength, final Integer numberOfCandles) {
+        final List<CandleDto> candles = Arrays.stream(Objects.requireNonNull(restTemplate.getForObject(getUri() + "api/candle/list/"
+                + currencyPair + "/" + numberOfCandles * periodLength, CandleDto[].class)))
+                .collect(Collectors.toList());
         return transformCandles(candles, periodLength);
     }
 
     @Override
     public List<CandleDto> getRecentCandles() {
-        return candleMapper.candleListToCandleDtoList(candleRepository.getRecentCurrencyPairs());
+        return Arrays.stream(Objects.requireNonNull(restTemplate.getForObject(getUri() + "api/candle/recent", CandleDto[].class)))
+                .collect(Collectors.toList());
     }
 
-    private List<CandleDto> transformCandles(List<CandleDto> candles, Integer periodLength) {
+    private String getUri() {
+        return env.getProperty("collector.url");
+    }
+
+    private List<CandleDto> transformCandles(final List<CandleDto> candles, final Integer periodLength) {
         if (periodLength == 1) {
             return candles;
         }
@@ -42,16 +51,16 @@ public class CandleServiceImpl implements CandleService{
         return getCandleDtos(candles, periodLength);
     }
 
-    private List<CandleDto> getCandleDtos(List<CandleDto> candles, Integer periodLength) {
-        List<CandleDto> transformedCandles = new ArrayList<>();
-        int numberOfAvailableCandle = candles.size() / periodLength;
+    private List<CandleDto> getCandleDtos(final List<CandleDto> candles, final Integer periodLength) {
+        final List<CandleDto> transformedCandles = new ArrayList<>();
+        final int numberOfAvailableCandle = candles.size() / periodLength;
         for (int i = 0; i < numberOfAvailableCandle; i++) {
             transformedCandles.add(transformCandle(candles.subList(i * periodLength, (i + 1) * periodLength)));
         }
         return transformedCandles;
     }
 
-    private CandleDto transformCandle(List<CandleDto> subList) {
+    private CandleDto transformCandle(final List<CandleDto> subList) {
         return CandleDto.builder()
                 .count(getCount(subList))
                 .volume(getVolume(subList))
@@ -64,23 +73,23 @@ public class CandleServiceImpl implements CandleService{
                 .build();
     }
 
-    private double getLow(List<CandleDto> subList) {
+    private double getLow(final List<CandleDto> subList) {
         return subList.stream().map(CandleDto::getLow).min(Double::compare).orElseThrow(RuntimeException::new);
     }
 
-    private double getHigh(List<CandleDto> subList) {
+    private double getHigh(final List<CandleDto> subList) {
         return subList.stream().map(CandleDto::getHigh).max(Double::compare).orElseThrow(RuntimeException::new);
     }
 
-    private double getVolume(List<CandleDto> subList) {
+    private double getVolume(final List<CandleDto> subList) {
         return subList.stream().map(CandleDto::getVolume).reduce(0D, Double::sum);
     }
 
-    private long getCount(List<CandleDto> subList) {
+    private long getCount(final List<CandleDto> subList) {
         return subList.stream().map(CandleDto::getCount).reduce(0L, Long::sum);
     }
 
-    private void decreaseCandleListWhenNeeded(List<CandleDto> candles, Integer periodLength) {
+    private void decreaseCandleListWhenNeeded(final List<CandleDto> candles, final Integer periodLength) {
         candles.subList(0, candles.size() % periodLength).clear();
     }
 

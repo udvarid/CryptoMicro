@@ -24,11 +24,7 @@ spec:
         - name: http
           containerPort: {{ .Values.backendReporter.port }}
         env:
-        - name: {{ .Values.db.env.db_service.name }}
-          value: {{ .Values.db.env.db_service.value }}
-        - name: {{ .Values.db.env.db_user.name }}
-          value: {{ .Values.db.env.db_user.value }}
-        - name: {{ .Values.db.env.db_password.name }}
-          value: {{ .Values.db.env.db_password.value }}
-        - name: {{ .Values.db.env.db_name.name }}
-          value: {{ .Values.db.env.db_name.value }}
+        - name: {{ .Values.backendReporter.env.crypto_collector.name }}
+          value: {{ .Values.backendCollector.name }}
+        - name: {{ .Values.backendReporter.env.crypto_collector_port.name }}
+          value: {{ .Values.backendCollector.port | quote}}          

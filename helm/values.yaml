@@ -13,6 +13,11 @@ backendReporter:
     name: backend-reporter
     image: udvaridonat/donat-crypto:cryptoReporter
     port: 8080
+    env:
+        crypto_collector:
+            name: CRYPTO_COLLECTOR            
+        crypto_collector_port:
+            name: CRYPTO_COLLECTOR_PORT            
     
 backendUser:
     name: backend-user
