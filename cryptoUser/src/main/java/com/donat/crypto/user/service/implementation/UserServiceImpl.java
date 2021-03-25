@@ -3,8 +3,15 @@ package com.donat.crypto.user.service.implementation;
 import javax.transaction.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -13,24 +20,28 @@ import com.donat.crypto.user.domain.User;
 import com.donat.crypto.user.domain.Wallet;
 import com.donat.crypto.user.domain.enums.CCY;
 import com.donat.crypto.user.domain.enums.TransactionType;
+import com.donat.crypto.user.dto.CandleDto;
 import com.donat.crypto.user.dto.RegisterDto;
 import com.donat.crypto.user.dto.UserDto;
 import com.donat.crypto.user.dto.UserLoginDto;
 import com.donat.crypto.user.dto.WalletDto;
+import com.donat.crypto.user.dto.WalletHistoryDto;
 import com.donat.crypto.user.exception.CryptoException;
 import com.donat.crypto.user.repository.UserRepository;
 import com.donat.crypto.user.repository.WalletRepository;
 import com.donat.crypto.user.service.AuthenticatorService;
 import com.donat.crypto.user.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class UserServiceImpl implements UserService {
 
+    public static final int NUMBER_OF_PERIODS = 96;
     @Autowired
     private UserRepository userRepository;
 
@@ -39,6 +50,15 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private AuthenticatorService authenticatorService;
+
+    @Autowired
+    private Environment env;
+
+    final private RestTemplate restTemplate;
+
+    public UserServiceImpl(final RestTemplateBuilder restTemplateBuilder) {
+        restTemplate = restTemplateBuilder.build();
+    }
 
     @Override
     public AuthenticationInfo register(final RegisterDto registerDto) throws CryptoException {
@@ -93,7 +113,7 @@ public class UserServiceImpl implements UserService {
         userRepository.saveAndFlush(user);
     }
 
-    private void addWalletToUser(User user, Wallet transaction) {
+    private void addWalletToUser(final User user, final Wallet transaction) {
         if (user.getWallets() == null) {
             user.setWallets(Stream.of(transaction).collect(Collectors.toSet()));
         } else {
@@ -102,7 +122,128 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUserInfo(String sessionId, String userId) throws CryptoException {
+    public WalletHistoryDto getWalletHistory(final String sessionId, final String userId) throws CryptoException {
+        if (!authenticatorService.validateSession(sessionId, userId)) {
+            throw new CryptoException("Session id is not valid for this userId");
+        }
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new CryptoException("No such a user"));
+        if (user.getWallets() != null && !user.getWallets().isEmpty()) {
+            Map<CCY, List<CandleDto>> ccyHistory = getCcyHistory();
+
+            LocalDateTime actualTime = ccyHistory.values().stream()
+                    .flatMap(Collection::stream)
+                    .map(CandleDto::getTime)
+                    .max(LocalDateTime::compareTo)
+                    .orElse(null);
+
+            LocalDateTime minTimeOfPrice = ccyHistory.values().stream()
+                    .flatMap(Collection::stream)
+                    .map(CandleDto::getTime)
+                    .min(LocalDateTime::compareTo)
+                    .orElse(null);
+
+            LocalDateTime minTimeOfWallet = user.getWallets().stream()
+                    .map(Wallet::getTimeOfTransaction)
+                    .min(LocalDateTime::compareTo)
+                    .orElse(null);
+
+            LocalDateTime minTime = minTimeOfWallet.isBefore(minTimeOfPrice) ? minTimeOfPrice :
+                    getProperMinTimeOfWallet(minTimeOfWallet, ccyHistory);
+
+            List<LocalDateTime> timeHorizont = getTimeHorizont(minTime, actualTime);
+            Map<LocalDateTime, Map<CCY, Double>> reportBase = getFullMapForPrice(timeHorizont, ccyHistory);
+            //Vagyon kiszámítása a fenti struktúrának megfelelően
+            Map<LocalDateTime, Map<CCY, Double>> walletBase = getFullMapForWallet(timeHorizont, user.getWallets());
+        }
+        return null;
+    }
+
+    private Map<LocalDateTime, Map<CCY, Double>> getFullMapForWallet(final List<LocalDateTime> timeHorizont, final Set<Wallet> wallets) {
+        final Map<LocalDateTime, Map<CCY, Double>> fullMap = new TreeMap<>();
+        for (final LocalDateTime time : timeHorizont) {
+            final Map<CCY, Double> priceSetForGivenTime = new HashMap<>();
+            for (final CCY ccy : CCY.values()) {
+                priceSetForGivenTime.put(ccy, 0d);
+            }
+            fullMap.put(time, priceSetForGivenTime);
+        }
+        for (Wallet wallet : wallets.stream().filter(w -> w.getTransactionType().equals(TransactionType.NORMAL)).collect(Collectors.toList())) {
+            int quarter = wallet.getTimeOfTransaction().getMinute() % 15;
+            int plusHour = quarter == 3 ? 1 : 0;
+            int minute = quarter == 3 ? 0 : quarter + 1;
+            LocalDateTime timeOfTransaction = wallet.getTimeOfTransaction().plusHours(plusHour).withMinute(minute);
+            fullMap.get(timeOfTransaction).put(wallet.getCcy(), wallet.getAmount());
+        }
+
+        for (int i = 1; i < timeHorizont.size(); i++) {
+            final Map<CCY, Double> mapToChange = fullMap.get(timeHorizont.get(i));
+            final Map<CCY, Double> previousMap = fullMap.get(timeHorizont.get(i - 1));
+            for (final CCY ccy : CCY.values()) {
+                mapToChange.put(ccy, mapToChange.get(ccy) + previousMap.get(ccy));
+            }
+        }
+
+        return fullMap;
+    }
+
+    private Map<LocalDateTime, Map<CCY, Double>> getFullMapForPrice(final List<LocalDateTime> timeHorizont, final Map<CCY, List<CandleDto>> ccyHistory) {
+        final Map<LocalDateTime, Map<CCY, Double>> fullMap = new TreeMap<>();
+        for (final LocalDateTime time : timeHorizont) {
+            final Map<CCY, Double> priceSetForGivenTime = new HashMap<>();
+            priceSetForGivenTime.put(CCY.USD, 1d);
+            for (final CCY ccy : Arrays.stream(CCY.values()).filter(c -> !c.equals(CCY.USD)).collect(Collectors.toList())) {
+                final Double price = ccyHistory.get(ccy).stream().filter(c -> c.getTime().equals(time)).map(CandleDto::getClose).findFirst().orElseGet(null);
+                priceSetForGivenTime.put(ccy, price);
+            }
+            fullMap.put(time, priceSetForGivenTime);
+        }
+        for (int i = 1; i < timeHorizont.size(); i++) {
+            final Map<CCY, Double> mapToChange = fullMap.get(timeHorizont.get(i));
+            final Map<CCY, Double> previousMap = fullMap.get(timeHorizont.get(i - 1));
+            for (final CCY ccy : Arrays.stream(CCY.values()).filter(c -> !c.equals(CCY.USD)).collect(Collectors.toList())) {
+                if (mapToChange.get(ccy) == null) {
+                    mapToChange.put(ccy, previousMap.get(ccy));
+                }
+            }
+        }
+        return fullMap;
+    }
+
+    private List<LocalDateTime> getTimeHorizont(final LocalDateTime minTime, final LocalDateTime actualTime) {
+        List<LocalDateTime> timeHorizont = new ArrayList<>();
+        timeHorizont.add(minTime);
+
+        LocalDateTime nextTime = minTime.plusMinutes(15);
+        while (nextTime.isAfter(actualTime)) {
+            timeHorizont.add(nextTime);
+            nextTime = nextTime.plusMinutes(15);
+        }
+
+        return timeHorizont;
+    }
+
+    private LocalDateTime getProperMinTimeOfWallet(final LocalDateTime minTimeOfWallet, final Map<CCY, List<CandleDto>> ccyHistory) {
+        return ccyHistory.values().stream()
+                .flatMap(Collection::stream)
+                .map(CandleDto::getTime)
+                .filter(t -> t.isAfter(minTimeOfWallet))
+                .min(LocalDateTime::compareTo)
+                .orElse(null);
+    }
+
+    private Map<CCY, List<CandleDto>> getCcyHistory() {
+        Map<CCY, List<CandleDto>> ccyHistory = new HashMap<>();
+        for (CCY ccy : Arrays.stream(CCY.values()).filter(c -> !c.equals(CCY.USD)).collect(Collectors.toList())) {
+            final List<CandleDto> candles = Arrays.stream(Objects.requireNonNull(restTemplate.getForObject(getUri() +
+                    "api/candle/list/" + ccy + "/" + NUMBER_OF_PERIODS, CandleDto[].class)))
+                    .collect(Collectors.toList());
+            ccyHistory.put(ccy, candles);
+        }
+        return ccyHistory;
+    }
+
+    @Override
+    public UserDto getUserInfo(final String sessionId, final String userId) throws CryptoException {
         if (!authenticatorService.validateSession(sessionId, userId)) {
             throw new CryptoException("Session id is not valid for this userId");
         }
@@ -142,5 +283,8 @@ public class UserServiceImpl implements UserService {
                 .isPresent();
     }
 
+    private String getUri() {
+        return env.getProperty("reporter.url");
+    }
 
 }

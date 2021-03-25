@@ -7,6 +7,7 @@ import com.donat.crypto.user.domain.enums.TransactionType;
 import com.donat.crypto.user.dto.RegisterDto;
 import com.donat.crypto.user.dto.UserDto;
 import com.donat.crypto.user.dto.UserLoginDto;
+import com.donat.crypto.user.dto.WalletHistoryDto;
 import com.donat.crypto.user.exception.CryptoException;
 
 public interface UserService {
@@ -21,4 +22,5 @@ public interface UserService {
 
     UserDto getUserInfo(String sessionId, String userId) throws CryptoException;
 
+    WalletHistoryDto getWalletHistory(String sessionId, String userId) throws CryptoException;
 }

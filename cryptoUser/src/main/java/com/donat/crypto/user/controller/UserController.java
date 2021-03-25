@@ -8,6 +8,7 @@ import com.donat.crypto.user.domain.enums.TransactionType;
 import com.donat.crypto.user.dto.RegisterDto;
 import com.donat.crypto.user.dto.UserDto;
 import com.donat.crypto.user.dto.UserLoginDto;
+import com.donat.crypto.user.dto.WalletHistoryDto;
 import com.donat.crypto.user.exception.CryptoException;
 import com.donat.crypto.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -61,4 +62,10 @@ public class UserController {
     public UserDto getUserInfo(@Context HttpServletRequest request) throws CryptoException {
         return userService.getUserInfo(request.getHeader(SESSION_ID), request.getHeader(USER_ID));
     }
+
+    @GetMapping("/walletHistory")
+    public WalletHistoryDto getWalletHistory(@Context HttpServletRequest request) throws CryptoException {
+        return userService.getWalletHistory(request.getHeader(SESSION_ID), request.getHeader(USER_ID));
+    }
+
 }
