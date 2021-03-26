@@ -1,6 +1,9 @@
 package com.donat.crypto.user.service;
 
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import com.donat.crypto.user.controller.AuthenticationInfo;
 import com.donat.crypto.user.domain.enums.CCY;
 import com.donat.crypto.user.domain.enums.TransactionType;
@@ -20,7 +23,9 @@ public interface UserService {
 
     void changeWallet(String userId, CCY ccy, TransactionType type, Double amount) throws CryptoException;
 
+    void changeWallet(String userId, CCY ccy, TransactionType type, Double amount, LocalDateTime time) throws CryptoException;
+
     UserDto getUserInfo(String sessionId, String userId) throws CryptoException;
 
-    WalletHistoryDto getWalletHistory(String sessionId, String userId) throws CryptoException;
+    List<WalletHistoryDto> getWalletHistory(String sessionId, String userId) throws CryptoException;
 }

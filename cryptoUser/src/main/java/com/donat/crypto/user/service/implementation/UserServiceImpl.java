@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,18 +100,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void changeWallet(final String userId, final CCY ccy, final TransactionType type, final Double amount) throws CryptoException {
+    public void changeWallet(String userId, CCY ccy, TransactionType type, Double amount, LocalDateTime time) throws CryptoException {
         final User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new CryptoException("User doesn't exist"));
         Wallet transaction = Wallet.builder()
                 .ccy(ccy)
                 .amount(amount)
                 .transactionType(type)
-                .timeOfTransaction(LocalDateTime.now())
+                .timeOfTransaction(time)
                 .build();
         walletRepository.saveAndFlush(transaction);
         addWalletToUser(user, transaction);
         userRepository.saveAndFlush(user);
+    }
+
+    @Override
+    public void changeWallet(final String userId, final CCY ccy, final TransactionType type, final Double amount) throws CryptoException {
+        changeWallet(userId, ccy, type, amount, LocalDateTime.now());
     }
 
     private void addWalletToUser(final User user, final Wallet transaction) {
@@ -122,11 +128,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public WalletHistoryDto getWalletHistory(final String sessionId, final String userId) throws CryptoException {
+    public List<WalletHistoryDto> getWalletHistory(final String sessionId, final String userId) throws CryptoException {
         if (!authenticatorService.validateSession(sessionId, userId)) {
             throw new CryptoException("Session id is not valid for this userId");
         }
         User user = userRepository.findByUserId(userId).orElseThrow(() -> new CryptoException("No such a user"));
+        List<WalletHistoryDto> result = new ArrayList<>();
         if (user.getWallets() != null && !user.getWallets().isEmpty()) {
             Map<CCY, List<CandleDto>> ccyHistory = getCcyHistory();
 
@@ -154,8 +161,28 @@ public class UserServiceImpl implements UserService {
             Map<LocalDateTime, Map<CCY, Double>> reportBase = getFullMapForPrice(timeHorizont, ccyHistory);
             //Vagyon kiszámítása a fenti struktúrának megfelelően
             Map<LocalDateTime, Map<CCY, Double>> walletBase = getFullMapForWallet(timeHorizont, user.getWallets());
+
+            for (LocalDateTime time : timeHorizont) {
+                WalletHistoryDto walletForOneTime = WalletHistoryDto.builder().time(time).build();
+                walletForOneTime.setDetailedAmount(getCalcualtedDetailedAmount(reportBase.get(time), walletBase.get(time)));
+                walletForOneTime.setAmount(walletForOneTime.getDetailedAmount().stream()
+                        .map(WalletDto::getAmount)
+                        .reduce(0d, Double::sum));
+
+                result.add(walletForOneTime);
+            }
         }
-        return null;
+        return result;
+    }
+
+    private Set<WalletDto> getCalcualtedDetailedAmount(final Map<CCY, Double> priceMap,
+                                                       final Map<CCY, Double> walletMap) {
+        return Arrays.stream(CCY.values())
+                .map(ccy -> WalletDto.builder()
+                        .ccy(ccy.toString())
+                        .amount(priceMap.get(ccy) * walletMap.get(ccy))
+                        .build())
+                .collect(Collectors.toSet());
     }
 
     private Map<LocalDateTime, Map<CCY, Double>> getFullMapForWallet(final List<LocalDateTime> timeHorizont, final Set<Wallet> wallets) {
@@ -168,10 +195,10 @@ public class UserServiceImpl implements UserService {
             fullMap.put(time, priceSetForGivenTime);
         }
         for (Wallet wallet : wallets.stream().filter(w -> w.getTransactionType().equals(TransactionType.NORMAL)).collect(Collectors.toList())) {
-            int quarter = wallet.getTimeOfTransaction().getMinute() % 15;
+            int quarter = wallet.getTimeOfTransaction().getMinute() / 15;
             int plusHour = quarter == 3 ? 1 : 0;
-            int minute = quarter == 3 ? 0 : quarter + 1;
-            LocalDateTime timeOfTransaction = wallet.getTimeOfTransaction().plusHours(plusHour).withMinute(minute);
+            int minute = quarter == 3 ? 0 : (quarter + 1) * 15;
+            LocalDateTime timeOfTransaction = wallet.getTimeOfTransaction().plusHours(plusHour).withMinute(minute).withSecond(0).withNano(0);
             fullMap.get(timeOfTransaction).put(wallet.getCcy(), wallet.getAmount());
         }
 
@@ -212,12 +239,15 @@ public class UserServiceImpl implements UserService {
     private List<LocalDateTime> getTimeHorizont(final LocalDateTime minTime, final LocalDateTime actualTime) {
         List<LocalDateTime> timeHorizont = new ArrayList<>();
         timeHorizont.add(minTime);
+        timeHorizont.add(actualTime);
 
         LocalDateTime nextTime = minTime.plusMinutes(15);
-        while (nextTime.isAfter(actualTime)) {
+        while (nextTime.isBefore(actualTime)) {
             timeHorizont.add(nextTime);
             nextTime = nextTime.plusMinutes(15);
         }
+
+        Collections.sort(timeHorizont);
 
         return timeHorizont;
     }
@@ -235,7 +265,7 @@ public class UserServiceImpl implements UserService {
         Map<CCY, List<CandleDto>> ccyHistory = new HashMap<>();
         for (CCY ccy : Arrays.stream(CCY.values()).filter(c -> !c.equals(CCY.USD)).collect(Collectors.toList())) {
             final List<CandleDto> candles = Arrays.stream(Objects.requireNonNull(restTemplate.getForObject(getUri() +
-                    "api/candle/list/" + ccy + "/" + NUMBER_OF_PERIODS, CandleDto[].class)))
+                    "api/candle/list/" + ccy + "-USD/1/" + NUMBER_OF_PERIODS, CandleDto[].class)))
                     .collect(Collectors.toList());
             ccyHistory.put(ccy, candles);
         }

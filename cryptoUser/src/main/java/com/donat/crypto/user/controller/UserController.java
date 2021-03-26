@@ -3,6 +3,8 @@ package com.donat.crypto.user.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import java.util.List;
+
 import com.donat.crypto.user.domain.enums.CCY;
 import com.donat.crypto.user.domain.enums.TransactionType;
 import com.donat.crypto.user.dto.RegisterDto;
@@ -64,7 +66,7 @@ public class UserController {
     }
 
     @GetMapping("/walletHistory")
-    public WalletHistoryDto getWalletHistory(@Context HttpServletRequest request) throws CryptoException {
+    public List<WalletHistoryDto> getWalletHistory(@Context HttpServletRequest request) throws CryptoException {
         return userService.getWalletHistory(request.getHeader(SESSION_ID), request.getHeader(USER_ID));
     }
 

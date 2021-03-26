@@ -42,7 +42,6 @@ public class Wallet {
     @Column(name = "amount")
     private Double amount;
 
-    @UpdateTimestamp
     private LocalDateTime timeOfTransaction;
 
     @Enumerated(EnumType.STRING)
