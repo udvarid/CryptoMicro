@@ -43,6 +43,7 @@ import org.springframework.web.client.RestTemplate;
 public class UserServiceImpl implements UserService {
 
     public static final int NUMBER_OF_PERIODS = 96;
+    public static final String NO_VALID_PRICE_DATA_IN_DB = "No valid price data in DB";
     @Autowired
     private UserRepository userRepository;
 
@@ -141,25 +142,25 @@ public class UserServiceImpl implements UserService {
                     .flatMap(Collection::stream)
                     .map(CandleDto::getTime)
                     .max(LocalDateTime::compareTo)
-                    .orElse(null);
+                    .orElseThrow(() -> new CryptoException(NO_VALID_PRICE_DATA_IN_DB));
 
             LocalDateTime minTimeOfPrice = ccyHistory.values().stream()
                     .flatMap(Collection::stream)
                     .map(CandleDto::getTime)
                     .min(LocalDateTime::compareTo)
-                    .orElse(null);
+                    .orElseThrow(() -> new CryptoException(NO_VALID_PRICE_DATA_IN_DB));
 
             LocalDateTime minTimeOfWallet = user.getWallets().stream()
                     .map(Wallet::getTimeOfTransaction)
                     .min(LocalDateTime::compareTo)
-                    .orElse(null);
+                    .orElseThrow(() -> new CryptoException("No valid transaction in Wallet"));
 
             LocalDateTime minTime = minTimeOfWallet.isBefore(minTimeOfPrice) ? minTimeOfPrice :
-                    getProperMinTimeOfWallet(minTimeOfWallet, ccyHistory);
+                    getProperMinTimeOfWallet(actualTime, minTimeOfWallet);
 
             List<LocalDateTime> timeHorizont = getTimeHorizont(minTime, actualTime);
             Map<LocalDateTime, Map<CCY, Double>> reportBase = getFullMapForPrice(timeHorizont, ccyHistory);
-            //Vagyon kiszámítása a fenti struktúrának megfelelően
+
             Map<LocalDateTime, Map<CCY, Double>> walletBase = getFullMapForWallet(timeHorizont, user.getWallets());
 
             for (LocalDateTime time : timeHorizont) {
@@ -168,11 +169,16 @@ public class UserServiceImpl implements UserService {
                 walletForOneTime.setAmount(walletForOneTime.getDetailedAmount().stream()
                         .map(WalletDto::getAmount)
                         .reduce(0d, Double::sum));
-
                 result.add(walletForOneTime);
             }
         }
         return result;
+    }
+
+    private LocalDateTime getProperMinTimeOfWallet(final LocalDateTime actualTime, final LocalDateTime minTimeOfWallet) {
+        int quarter = minTimeOfWallet.getMinute() / 15;
+        LocalDateTime properTime = minTimeOfWallet.withMinute(quarter * 15).withSecond(0).withNano(0).plusMinutes(15);
+        return properTime.isAfter(actualTime) ? actualTime : properTime;
     }
 
     private Set<WalletDto> getCalcualtedDetailedAmount(final Map<CCY, Double> priceMap,
@@ -196,30 +202,30 @@ public class UserServiceImpl implements UserService {
         }
         for (Wallet wallet : wallets.stream().filter(w -> w.getTransactionType().equals(TransactionType.NORMAL)).collect(Collectors.toList())) {
             int quarter = wallet.getTimeOfTransaction().getMinute() / 15;
-            int plusHour = quarter == 3 ? 1 : 0;
-            int minute = quarter == 3 ? 0 : (quarter + 1) * 15;
-            LocalDateTime timeOfTransaction = wallet.getTimeOfTransaction().plusHours(plusHour).withMinute(minute).withSecond(0).withNano(0);
-            fullMap.get(timeOfTransaction).put(wallet.getCcy(), wallet.getAmount());
+            LocalDateTime timeOfTransaction = wallet.getTimeOfTransaction().withMinute(quarter * 15).withSecond(0).withNano(0).plusMinutes(15);
+            fullMap.get(timeOfTransaction).merge(wallet.getCcy(), wallet.getAmount(), Double::sum);
         }
 
         for (int i = 1; i < timeHorizont.size(); i++) {
             final Map<CCY, Double> mapToChange = fullMap.get(timeHorizont.get(i));
             final Map<CCY, Double> previousMap = fullMap.get(timeHorizont.get(i - 1));
             for (final CCY ccy : CCY.values()) {
-                mapToChange.put(ccy, mapToChange.get(ccy) + previousMap.get(ccy));
+                mapToChange.merge(ccy, previousMap.get(ccy), Double::sum);
             }
         }
 
         return fullMap;
     }
 
-    private Map<LocalDateTime, Map<CCY, Double>> getFullMapForPrice(final List<LocalDateTime> timeHorizont, final Map<CCY, List<CandleDto>> ccyHistory) {
+    private Map<LocalDateTime, Map<CCY, Double>> getFullMapForPrice(final List<LocalDateTime> timeHorizont,
+                                                                    final Map<CCY, List<CandleDto>> ccyHistory) {
         final Map<LocalDateTime, Map<CCY, Double>> fullMap = new TreeMap<>();
         for (final LocalDateTime time : timeHorizont) {
             final Map<CCY, Double> priceSetForGivenTime = new HashMap<>();
             priceSetForGivenTime.put(CCY.USD, 1d);
             for (final CCY ccy : Arrays.stream(CCY.values()).filter(c -> !c.equals(CCY.USD)).collect(Collectors.toList())) {
-                final Double price = ccyHistory.get(ccy).stream().filter(c -> c.getTime().equals(time)).map(CandleDto::getClose).findFirst().orElseGet(null);
+                final Double price = ccyHistory.get(ccy).stream()
+                        .filter(c -> c.getTime().equals(time)).map(CandleDto::getClose).findFirst().orElseGet(null);
                 priceSetForGivenTime.put(ccy, price);
             }
             fullMap.put(time, priceSetForGivenTime);
@@ -228,7 +234,7 @@ public class UserServiceImpl implements UserService {
             final Map<CCY, Double> mapToChange = fullMap.get(timeHorizont.get(i));
             final Map<CCY, Double> previousMap = fullMap.get(timeHorizont.get(i - 1));
             for (final CCY ccy : Arrays.stream(CCY.values()).filter(c -> !c.equals(CCY.USD)).collect(Collectors.toList())) {
-                if (mapToChange.get(ccy) == null) {
+                if (mapToChange.get(ccy) == null && previousMap.get(ccy) != null) {
                     mapToChange.put(ccy, previousMap.get(ccy));
                 }
             }
@@ -239,7 +245,9 @@ public class UserServiceImpl implements UserService {
     private List<LocalDateTime> getTimeHorizont(final LocalDateTime minTime, final LocalDateTime actualTime) {
         List<LocalDateTime> timeHorizont = new ArrayList<>();
         timeHorizont.add(minTime);
-        timeHorizont.add(actualTime);
+        if (!minTime.isEqual(actualTime)) {
+            timeHorizont.add(actualTime);
+        }
 
         LocalDateTime nextTime = minTime.plusMinutes(15);
         while (nextTime.isBefore(actualTime)) {
@@ -252,14 +260,7 @@ public class UserServiceImpl implements UserService {
         return timeHorizont;
     }
 
-    private LocalDateTime getProperMinTimeOfWallet(final LocalDateTime minTimeOfWallet, final Map<CCY, List<CandleDto>> ccyHistory) {
-        return ccyHistory.values().stream()
-                .flatMap(Collection::stream)
-                .map(CandleDto::getTime)
-                .filter(t -> t.isAfter(minTimeOfWallet))
-                .min(LocalDateTime::compareTo)
-                .orElse(null);
-    }
+
 
     private Map<CCY, List<CandleDto>> getCcyHistory() {
         Map<CCY, List<CandleDto>> ccyHistory = new HashMap<>();

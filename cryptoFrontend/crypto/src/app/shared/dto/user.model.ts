@@ -19,3 +19,9 @@ export interface Wallet {
     ccy: string;
     amount: number;
 }
+
+export interface WalletHistoryDto {
+    time: string;
+    amount: number;
+    detailedAmount: Wallet[];
+}
