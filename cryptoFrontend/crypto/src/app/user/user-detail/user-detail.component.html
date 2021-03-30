@@ -2,7 +2,7 @@
 <hr>
 <strong class="myHead">Name : {{userInfo.name}}</strong>
 <hr>
-<strong class="myHead">Netto assets:</strong>
+<strong class="myHead">Netto assets: {{ recentUserWallet.amount | number:'1.3'}} </strong>
 <br>
 --------------------------------------------------
 
@@ -12,7 +12,7 @@
         class="list-group-item"        
         *ngFor="let ccy of ccys; let i = index"        
         >
-        {{ccy.ccy}} - {{ccy.amount | number:'1.3'}}        
+        {{ccy.ccy}} - {{ccy.amount | number:'1.3'}}           <span *ngIf="ccy.ccy !== 'USD' && hasWalletInfo(ccy.ccy)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ getWalletInfo(ccy.ccy) | number:'1.3' }} $</span>    
         </li>        
     </ul>
 </div>
