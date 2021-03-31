@@ -203,6 +203,7 @@ public class UserServiceImpl implements UserService {
         for (Wallet wallet : wallets.stream().filter(w -> w.getTransactionType().equals(TransactionType.NORMAL)).collect(Collectors.toList())) {
             int quarter = wallet.getTimeOfTransaction().getMinute() / 15;
             LocalDateTime timeOfTransaction = wallet.getTimeOfTransaction().withMinute(quarter * 15).withSecond(0).withNano(0).plusMinutes(15);
+            timeOfTransaction = timeOfTransaction.isBefore(timeHorizont.get(0)) ? timeHorizont.get(0) : timeOfTransaction;
             fullMap.get(timeOfTransaction).merge(wallet.getCcy(), wallet.getAmount(), Double::sum);
         }
 

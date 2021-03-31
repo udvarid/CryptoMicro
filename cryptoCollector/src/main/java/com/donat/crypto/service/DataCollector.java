@@ -76,7 +76,8 @@ public class DataCollector {
         }
 
         if (newCandleSaved) {
-            sendMessage();
+            //TODO fix this, somehow the JMS is not working due to unsufficient space problem
+            //sendMessage();
         }
 
     }

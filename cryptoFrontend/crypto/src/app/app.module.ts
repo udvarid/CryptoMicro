@@ -18,6 +18,7 @@ import { UserComponent } from './user/user.component';
 import { SessionInterceptor } from './shared/interceptors/http-session.interceptor';
 import { UserDetailComponent } from './user/user-detail/user-detail.component';
 import { UserHistoryComponent } from './user/user-history/user-history.component';
+import { HistoryWalletComponent } from './shared/history-wallet/history-wallet.component';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { UserHistoryComponent } from './user/user-history/user-history.component
     ReporterComponent,
     RecentCandleComponent,
     HistoryCandleComponent,
+    HistoryWalletComponent,
     AuthComponent,
     UserComponent,
     UserDetailComponent,

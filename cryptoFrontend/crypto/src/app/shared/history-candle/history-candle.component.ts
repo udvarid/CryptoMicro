@@ -112,7 +112,7 @@ export class HistoryCandleComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    //this.historyCandlesSubscription.unsubscribe();
+    this.historyCandlesSubscription.unsubscribe();
   }
 
 }
