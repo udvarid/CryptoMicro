@@ -1,3 +1,5 @@
+declare var processEnv: ProcessEnv
+
 interface ProcessEnv {
     env: Env
 }
@@ -10,5 +12,3 @@ interface Env {
 interface GlobalEnvironment {
     processEnv: ProcessEnv
 }
-
-declare var processEnv: ProcessEnv

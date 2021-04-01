@@ -23,6 +23,11 @@ backendUser:
     name: backend-user
     image: udvaridonat/donat-crypto:cryptoUser
     port: 8080    
+    env:
+        crypto_reporter:
+            name: CRYPTO_REPORTER            
+        crypto_reporter_port:
+            name: CRYPTO_REPORTER_PORT                
             
 frontend:            
     name: frontend
