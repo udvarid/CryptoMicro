@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -65,9 +66,11 @@ public class UserController {
         return userService.getUserInfo(request.getHeader(SESSION_ID), request.getHeader(USER_ID));
     }
 
-    @GetMapping("/walletHistory")
-    public List<WalletHistoryDto> getWalletHistory(@Context HttpServletRequest request) throws CryptoException {
-        return userService.getWalletHistory(request.getHeader(SESSION_ID), request.getHeader(USER_ID));
+    @GetMapping("/walletHistory/{periodLength}/{numberOfCandles}")
+    public List<WalletHistoryDto> getWalletHistory(@Context HttpServletRequest request,
+                                                   @PathVariable("periodLength") Integer periodLength,
+                                                   @PathVariable("numberOfCandles") Integer numberOfCandles) throws CryptoException {
+        return userService.getWalletHistory(request.getHeader(SESSION_ID), request.getHeader(USER_ID), periodLength, numberOfCandles);
     }
 
 }

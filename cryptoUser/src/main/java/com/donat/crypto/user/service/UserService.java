@@ -27,5 +27,5 @@ public interface UserService {
 
     UserDto getUserInfo(String sessionId, String userId) throws CryptoException;
 
-    List<WalletHistoryDto> getWalletHistory(String sessionId, String userId) throws CryptoException;
+    List<WalletHistoryDto> getWalletHistory(String sessionId, String userId, Integer periodLength, Integer numberOfCandles) throws CryptoException;
 }

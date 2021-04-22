@@ -1,3 +1,4 @@
+import { Input } from '@angular/core';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
@@ -10,6 +11,8 @@ import { WalletHistoryDto } from '../dto/user.model';
   styleUrls: ['./history-wallet.component.css']
 })
 export class HistoryWalletComponent implements OnInit, OnDestroy {
+
+  @Input() periodLength: number;
 
   multi: any[] 
 
@@ -47,12 +50,11 @@ export class HistoryWalletComponent implements OnInit, OnDestroy {
     this.view = [this.chartStep * this.chartStepMultiplier * 2.75, this.chartStep * this.chartStepMultiplier * 1.75];
 
     this.userWalletHistoryChanged = this.userService.walletHistory.subscribe(walletHistory => {
-            this.userWalletHistory = walletHistory;      
-            console.log(this.userWalletHistory);
+            this.userWalletHistory = walletHistory;                  
             this.draw(this.userWalletHistory);
           }      
       );
-    this.userService.getWalletHistory(this.authService.getActiveUser().userId);
+      this.userService.getWalletHistory(this.authService.getActiveUser().userId, 96, this.periodLength); 
   }
 
   ngOnDestroy(): void {

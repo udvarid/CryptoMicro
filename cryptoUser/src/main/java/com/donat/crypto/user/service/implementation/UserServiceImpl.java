@@ -42,7 +42,6 @@ import org.springframework.web.client.RestTemplate;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    public static final int NUMBER_OF_PERIODS = 96;
     public static final String NO_VALID_PRICE_DATA_IN_DB = "No valid price data in DB";
     @Autowired
     private UserRepository userRepository;
@@ -129,14 +128,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<WalletHistoryDto> getWalletHistory(final String sessionId, final String userId) throws CryptoException {
+    public List<WalletHistoryDto> getWalletHistory(final String sessionId,
+                                                   final String userId,
+                                                   final Integer periodLength,
+                                                   final Integer numberOfCandles) throws CryptoException {
         if (!authenticatorService.validateSession(sessionId, userId)) {
             throw new CryptoException("Session id is not valid for this userId");
         }
         User user = userRepository.findByUserId(userId).orElseThrow(() -> new CryptoException("No such a user"));
-        List<WalletHistoryDto> result = new ArrayList<>();
+        final List<WalletHistoryDto> result = new ArrayList<>();
         if (user.getWallets() != null && !user.getWallets().isEmpty()) {
-            Map<CCY, List<CandleDto>> ccyHistory = getCcyHistory();
+            Map<CCY, List<CandleDto>> ccyHistory = getCcyHistory(periodLength * numberOfCandles);
 
             LocalDateTime actualTime = ccyHistory.values().stream()
                     .flatMap(Collection::stream)
@@ -172,7 +174,13 @@ public class UserServiceImpl implements UserService {
                 result.add(walletForOneTime);
             }
         }
-        return result;
+
+        return periodLength > 1 ? Stream.iterate(0, n -> n + 1)
+                .limit(result.size())
+                .filter(i -> i % periodLength == 0)
+                .sorted(Collections.reverseOrder())
+                .map(i -> result.get(result.size() - 1 - i))
+                .collect(Collectors.toList()) : result;
     }
 
     private LocalDateTime getProperMinTimeOfWallet(final LocalDateTime actualTime, final LocalDateTime minTimeOfWallet) {
@@ -263,11 +271,11 @@ public class UserServiceImpl implements UserService {
 
 
 
-    private Map<CCY, List<CandleDto>> getCcyHistory() {
+    private Map<CCY, List<CandleDto>> getCcyHistory(final int numberOfPeriods) {
         Map<CCY, List<CandleDto>> ccyHistory = new HashMap<>();
         for (CCY ccy : Arrays.stream(CCY.values()).filter(c -> !c.equals(CCY.USD)).collect(Collectors.toList())) {
             final List<CandleDto> candles = Arrays.stream(Objects.requireNonNull(restTemplate.getForObject(getUri() +
-                    "api/candle/list/" + ccy + "-USD/1/" + NUMBER_OF_PERIODS, CandleDto[].class)))
+                    "api/candle/list/" + ccy + "-USD/1/" + numberOfPeriods, CandleDto[].class)))
                     .collect(Collectors.toList());
             ccyHistory.put(ccy, candles);
         }

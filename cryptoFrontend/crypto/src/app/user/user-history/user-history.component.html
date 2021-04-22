@@ -1,2 +1,13 @@
 <strong class="myHead">Wallet history</strong>
-<app-history-wallet></app-history-wallet>
+<br>
+<label id="example-radio-group-label">Period length:</label>
+<mat-radio-group
+  (change)="onChange($event)"
+  aria-labelledby="example-radio-group-label"
+  class="example-radio-group"
+  [(ngModel)]="favoritePeriod">
+  <mat-radio-button class="example-radio-button" *ngFor="let period of periods" [value]="period">
+    {{period}}
+  </mat-radio-button>
+</mat-radio-group>
+<app-history-wallet [periodLength]="this.periodLength()"></app-history-wallet>

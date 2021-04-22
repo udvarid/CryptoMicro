@@ -27,9 +27,9 @@ export class UserService {
           });
     };
 
-    public getWalletHistory(userId: string) {    
+    public getWalletHistory(userId: string, numberOfCandles: number, period: number) {    
         const header = new HttpHeaders({userId: userId});
-        this.http.get(this.pre + '/api/user/walletHistory', {headers: header})          
+        this.http.get(this.pre + '/api/user/walletHistory' + '/' + period + '/' + numberOfCandles, {headers: header})          
           .subscribe((response: WalletHistoryDto[]) => {                        
               this.walletHistory.next(response);
           });

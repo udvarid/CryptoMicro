@@ -1,3 +1,9 @@
+if [ $OSTYPE != "msys" ]; then
+	echo This is linux, trying to start minikube;
+	minikube start;
+	minikube addons enable ingress;
+fi;
+
 echo delete previous version
 helm delete crypto --namespace crypto
 kubectl delete namespace crypto

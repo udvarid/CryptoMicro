@@ -28,8 +28,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
           }      
       );
     this.userWalletHistoryChanged = this.userService.walletHistory.subscribe((walletHistory: WalletHistoryDto[]) => {
-        this.recentUserWallet = walletHistory[walletHistory.length - 1];  
-        console.log(this.recentUserWallet)            ;
+        this.recentUserWallet = walletHistory[walletHistory.length - 1];          
       }      
   );
     this.userService.getWallet(this.authService.getActiveUser().userId);
