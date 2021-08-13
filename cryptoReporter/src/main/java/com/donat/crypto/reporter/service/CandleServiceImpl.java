@@ -19,10 +19,17 @@ public class CandleServiceImpl implements CandleService {
     @Autowired
     private Environment env;
 
-    final private RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     public CandleServiceImpl(final RestTemplateBuilder restTemplateBuilder) {
-        restTemplate = restTemplateBuilder.build();
+        if (restTemplateBuilder != null) {
+            restTemplate = restTemplateBuilder.build();
+        }
+    }
+
+    //for testing purpose
+    public void setRestTemplate(final RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     @Override
