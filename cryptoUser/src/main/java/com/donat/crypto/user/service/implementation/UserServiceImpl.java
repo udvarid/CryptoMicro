@@ -32,6 +32,7 @@ import com.donat.crypto.user.repository.UserRepository;
 import com.donat.crypto.user.repository.WalletRepository;
 import com.donat.crypto.user.service.AuthenticatorService;
 import com.donat.crypto.user.service.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.env.Environment;
@@ -67,7 +68,7 @@ public class UserServiceImpl implements UserService {
             throw new CryptoException("User is already present");
         }
 
-        if (registerDto.getPassword() == null || registerDto.getPassword().isEmpty()) {
+        if (StringUtils.isEmpty(registerDto.getPassword())) {
             throw new CryptoException("Password invalid");
         }
 

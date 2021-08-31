@@ -30,9 +30,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
 
-    public static final String SESSION_ID = "sessionid";
-    public static final String NAME = "name";
-    public static final String USER_ID = "userid";
+    static final String SESSION_ID = "sessionid";
+    static final String NAME = "name";
+    static final String USER_ID = "userid";
     @Autowired
     private UserService userService;
 
