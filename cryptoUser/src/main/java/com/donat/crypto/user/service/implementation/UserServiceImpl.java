@@ -120,14 +120,6 @@ public class UserServiceImpl implements UserService {
         changeWallet(userId, ccy, type, amount, LocalDateTime.now());
     }
 
-    private void addWalletToUser(final User user, final Wallet transaction) {
-        if (user.getWallets() == null) {
-            user.setWallets(Stream.of(transaction).collect(Collectors.toSet()));
-        } else {
-            user.getWallets().add(transaction);
-        }
-    }
-
     @Override
     public List<WalletHistoryDto> getWalletHistory(final String sessionId,
                                                    final String userId,
@@ -182,6 +174,31 @@ public class UserServiceImpl implements UserService {
                 .sorted(Collections.reverseOrder())
                 .map(i -> result.get(result.size() - 1 - i))
                 .collect(Collectors.toList()) : result;
+    }
+
+    @Override
+    public UserDto getUserInfo(final String sessionId, final String userId) throws CryptoException {
+        if (!authenticatorService.validateSession(sessionId, userId)) {
+            throw new CryptoException("Session id is not valid for this userId");
+        }
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new CryptoException("No such a user"));
+        Set<WalletDto> wallets = Arrays.stream(CCY.values())
+                .map(ccy -> new WalletDto(ccy.toString(), sumOfCcy(ccy, user.getWallets())))
+                .collect(Collectors.toSet());
+
+        return UserDto.builder()
+                .userId(userId)
+                .name(user.getName())
+                .wallets(wallets)
+                .build();
+    }
+
+    private void addWalletToUser(final User user, final Wallet transaction) {
+        if (user.getWallets() == null) {
+            user.setWallets(Stream.of(transaction).collect(Collectors.toSet()));
+        } else {
+            user.getWallets().add(transaction);
+        }
     }
 
     private LocalDateTime getProperMinTimeOfWallet(final LocalDateTime actualTime, final LocalDateTime minTimeOfWallet) {
@@ -270,8 +287,6 @@ public class UserServiceImpl implements UserService {
         return timeHorizont;
     }
 
-
-
     private Map<CCY, List<CandleDto>> getCcyHistory(final int numberOfPeriods) {
         Map<CCY, List<CandleDto>> ccyHistory = new HashMap<>();
         for (CCY ccy : Arrays.stream(CCY.values()).filter(c -> !c.equals(CCY.USD)).collect(Collectors.toList())) {
@@ -281,23 +296,6 @@ public class UserServiceImpl implements UserService {
             ccyHistory.put(ccy, candles);
         }
         return ccyHistory;
-    }
-
-    @Override
-    public UserDto getUserInfo(final String sessionId, final String userId) throws CryptoException {
-        if (!authenticatorService.validateSession(sessionId, userId)) {
-            throw new CryptoException("Session id is not valid for this userId");
-        }
-        User user = userRepository.findByUserId(userId).orElseThrow(() -> new CryptoException("No such a user"));
-        Set<WalletDto> wallets = Arrays.stream(CCY.values())
-                .map(ccy -> new WalletDto(ccy.toString(), sumOfCcy(ccy, user.getWallets())))
-                .collect(Collectors.toSet());
-
-        return UserDto.builder()
-                .userId(userId)
-                .name(user.getName())
-                .wallets(wallets)
-                .build();
     }
 
     private Double sumOfCcy(final CCY ccy, final Set<Wallet> wallets) {

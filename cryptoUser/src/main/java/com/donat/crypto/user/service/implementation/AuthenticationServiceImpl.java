@@ -21,7 +21,7 @@ public class AuthenticationServiceImpl implements AuthenticatorService {
         clearOldSessions();
         String session = getSession(userId);
         if (session == null) {
-            session= generateNewSession();
+            session = generateNewSession();
             sessionMap.put(session, new LoggedInUser(userId));
         }
         return session;
