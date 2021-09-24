@@ -32,7 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(CandleController.class)
 class CandleControllerTest {
 
-
     @MockBean
     CandleService candleService;
 
