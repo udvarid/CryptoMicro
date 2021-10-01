@@ -178,10 +178,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserInfo(final String sessionId, final String userId) throws CryptoException {
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new CryptoException("No such a user"));
         if (!authenticatorService.validateSession(sessionId, userId)) {
             throw new CryptoException("Session id is not valid for this userId");
         }
-        User user = userRepository.findByUserId(userId).orElseThrow(() -> new CryptoException("No such a user"));
         Set<WalletDto> wallets = Arrays.stream(CCY.values())
                 .map(ccy -> new WalletDto(ccy.toString(), sumOfCcy(ccy, user.getWallets())))
                 .collect(Collectors.toSet());

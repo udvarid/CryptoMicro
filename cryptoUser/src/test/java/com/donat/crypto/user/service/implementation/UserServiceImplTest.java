@@ -2,9 +2,13 @@ package com.donat.crypto.user.service.implementation;
 
 import com.donat.crypto.user.controller.AuthenticationInfo;
 import com.donat.crypto.user.domain.User;
+import com.donat.crypto.user.domain.Wallet;
+import com.donat.crypto.user.domain.enums.CCY;
+import com.donat.crypto.user.domain.enums.TransactionType;
 import com.donat.crypto.user.dto.RegisterDto;
 import com.donat.crypto.user.dto.UserDto;
 import com.donat.crypto.user.dto.UserLoginDto;
+import com.donat.crypto.user.dto.WalletDto;
 import com.donat.crypto.user.exception.CryptoException;
 import com.donat.crypto.user.repository.UserRepository;
 import com.donat.crypto.user.repository.WalletRepository;
@@ -14,17 +18,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -104,6 +109,12 @@ class UserServiceImplTest {
         assertThat(login.getSessionId()).isNotEmpty();
         UserDto userInfo = userService.getUserInfo(login.getSessionId(), login.getUserId());
         assertThat(userInfo).isNotNull();
+        assertTrue(userInfo.getWallets().stream().anyMatch(w -> w.getCcy().equals(CCY.USD.toString())));
+        assertEquals(0d, userInfo.getWallets().stream().filter(w -> w.getCcy().equals(CCY.USD.toString())).findAny().orElse(WalletDto.builder().build()).getAmount());
+        assertTrue(userInfo.getWallets().stream().anyMatch(w -> w.getCcy().equals(CCY.BTC.toString())));
+        assertEquals(200d, userInfo.getWallets().stream().filter(w -> w.getCcy().equals(CCY.BTC.toString())).findAny().orElse(WalletDto.builder().build()).getAmount());
+        assertTrue(userInfo.getWallets().stream().anyMatch(w -> w.getCcy().equals(CCY.ETH.toString())));
+        assertEquals(20d, userInfo.getWallets().stream().filter(w -> w.getCcy().equals(CCY.ETH.toString())).findAny().orElse(WalletDto.builder().build()).getAmount());
     }
 
     @Test
@@ -114,15 +125,33 @@ class UserServiceImplTest {
         userService.logout(login.getSessionId());
         CryptoException e = assertThrows(CryptoException.class, () -> userService.getUserInfo(login.getSessionId(), login.getUserId()));
         assertThat(e).hasMessage("Session id is not valid for this userId");
+    }
 
+    @Test
+    public void whenUserIsNotKnown_thenExceptionIsThrown() throws CryptoException {
+        when(userRepository.findByUserId(any())).thenReturn(Optional.empty());
+        CryptoException e = assertThrows(CryptoException.class, () -> userService.getUserInfo("random","random"));
+        assertThat(e).hasMessage("No such a user");
     }
 
     private User getUser(String password) {
         return User.builder()
                 .userId("1")
                 .password(password)
-                .wallets(Sets.newHashSet())
+                .wallets(createWallets())
                 .build();
+    }
+
+    private Set<Wallet> createWallets() {
+        final Set<Wallet> wallets = new HashSet<>();
+        wallets.add(Wallet.builder().ccy(CCY.BTC).transactionType(TransactionType.NORMAL).amount(100d).id(1l).build());
+        wallets.add(Wallet.builder().ccy(CCY.BTC).transactionType(TransactionType.NORMAL).amount(100d).id(2l).build());
+        wallets.add(Wallet.builder().ccy(CCY.BTC).transactionType(TransactionType.LOAN).amount(25d).id(3l).build());
+        wallets.add(Wallet.builder().ccy(CCY.ETH).transactionType(TransactionType.NORMAL).amount(10d).id(4l).build());
+        wallets.add(Wallet.builder().ccy(CCY.ETH).transactionType(TransactionType.NORMAL).amount(10d).id(5l).build());
+        wallets.add(Wallet.builder().ccy(CCY.USD).transactionType(TransactionType.LOAN).amount(100d).id(6l).build());
+        wallets.add(Wallet.builder().ccy(CCY.USD).transactionType(TransactionType.LOAN).amount(500d).id(7l).build());
+        return wallets;
     }
 
 
